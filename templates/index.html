@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Predictive Maintenance — Machine Failure Risk Assessment</title>
+    <meta
+      name="description"
+      content="AI-powered industrial dashboard for machine failure risk assessment using the AI4I 2020 predictive maintenance dataset."
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <!-- ============================ BACKGROUND ============================ -->
+    <div class="bg-layer" aria-hidden="true">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow--a"></div>
+      <div class="bg-glow bg-glow--b"></div>
+      <div class="bg-scan"></div>
+      <div id="particles"></div>
+      <div class="bg-vignette"></div>
+    </div>
+
+    <div class="shell">
+      <!-- ============================= HEADER ============================= -->
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand__mark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.09 3V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand__title">Predictive Maintenance — Machine Failure Risk Assessment</h1>
+            <p class="brand__sub">AI4I 2020 Dataset · ML Risk Classifier · Real-time analysis</p>
+          </div>
+        </div>
+        <div class="status-pill"><span class="dot"></span> SYSTEM ONLINE</div>
+      </header>
+
+      <!-- ============================ FLOW STRIP =========================== -->
+      <ol class="flow reveal" aria-label="Analysis flow">
+        <li class="flow__step is-active"><span class="flow__n">01</span> Enter machine parameters</li>
+        <li class="flow__step"><span class="flow__n">02</span> Run analysis</li>
+        <li class="flow__step"><span class="flow__n">03</span> Failure probability</li>
+        <li class="flow__step"><span class="flow__n">04</span> Risk level</li>
+        <li class="flow__step"><span class="flow__n">05</span> Machine status</li>
+      </ol>
+
+      <!-- ============================ DASHBOARD =========================== -->
+      <div class="grid">
+        <!-- ---------------------- LEFT: PARAMETERS ---------------------- -->
+        <section class="panel reveal" data-delay="1">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">Machine Parameters</h2>
+              <p class="panel__sub">Enter current machine operating conditions</p>
+            </div>
+            <span class="panel__tag">STEP 01 · INPUT</span>
+          </div>
+          <div class="panel__body">
+            <!-- Keep your existing Flask route/method here. -->
+            <form id="paramsForm" method="POST" action="{{ url_for('predict') }}">
+              <div class="field">
+                <div class="field__label">
+                  <span class="field__name">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+                    Air Temperature
+                  </span>
+                  <span class="field__unit">K</span>
+                </div>
+                <div class="field__control">
+                  <input type="number" step="any" name="air_temperature" placeholder="298.1"
+                         value="{{ request.form.air_temperature if request.form else '' }}" required />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field__label">
+                  <span class="field__name">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9a4 4 0 0 0-2 7.5"></path><path d="M12 3v2"></path><circle cx="12" cy="12" r="9"></circle></svg>
+                    Process Temperature
+                  </span>
+                  <span class="field__unit">K</span>
+                </div>
+                <div class="field__control">
+                  <input type="number" step="any" name="process_temperature" placeholder="308.6"
+                         value="{{ request.form.process_temperature if request.form else '' }}" required />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field__label">
+                  <span class="field__name">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 3v6h-6"></path></svg>
+                    Rotational Speed
+                  </span>
+                  <span class="field__unit">rpm</span>
+                </div>
+                <div class="field__control">
+                  <input type="number" step="any" name="rotational_speed" placeholder="1551"
+                         value="{{ request.form.rotational_speed if request.form else '' }}" required />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field__label">
+                  <span class="field__name">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3"></path><path d="M4.2 7.2 6.3 9.3"></path><path d="M3 15h3"></path><path d="M18 15h3"></path><path d="M12 15l5-4"></path><circle cx="12" cy="15" r="2"></circle></svg>
+                    Torque
+                  </span>
+                  <span class="field__unit">Nm</span>
+                </div>
+                <div class="field__control">
+                  <input type="number" step="any" name="torque" placeholder="42.8"
+                         value="{{ request.form.torque if request.form else '' }}" required />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field__label">
+                  <span class="field__name">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l-2.6 2.6"></path></svg>
+                    Tool Wear
+                  </span>
+                  <span class="field__unit">min</span>
+                </div>
+                <div class="field__control">
+                  <input type="number" step="any" name="tool_wear" placeholder="120"
+                         value="{{ request.form.tool_wear if request.form else '' }}" required />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-analyze" id="analyzeBtn">ANALYZE MACHINE</button>
+              <p class="form-note">Parameters are evaluated by the trained failure-risk classifier.</p>
+            </form>
+          </div>
+        </section>
+
+        <!-- --------------------- RIGHT: RISK ASSESSMENT ------------------ -->
+        <section class="panel risk reveal" id="riskPanel" data-delay="2">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title">Failure Risk</h2>
+              <p class="panel__sub">Model output for the submitted operating point</p>
+            </div>
+            <span class="panel__tag">OUTPUT</span>
+          </div>
+
+          <div class="panel__body">
+            <!-- Idle state (no prediction yet) -->
+            <div class="idle" id="riskIdle">
+              <div class="idle__ring">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+              </div>
+              <div class="idle__title">AWAITING ANALYSIS</div>
+              <p class="idle__text">
+                Enter the machine parameters and run the analysis to generate a failure-risk
+                assessment.
+              </p>
+            </div>
+
+            <!-- Result state (populated from Flask/Jinja values) -->
+            <div class="risk-foot" id="riskResult" hidden>
+              <div class="gauge-wrap">
+                <div class="gauge">
+                  <div class="gauge__halo"></div>
+                  <svg viewBox="0 0 260 260">
+                    <circle class="gauge__track" cx="130" cy="130" r="110"></circle>
+                    <circle class="gauge__value" id="gaugeArc" cx="130" cy="130" r="110"
+                            stroke-dasharray="691.15 691.15" stroke-dashoffset="691.15"></circle>
+                  </svg>
+                  <div class="gauge__center">
+                    <div class="gauge__caption">FAILURE PROBABILITY</div>
+                    <div class="gauge__number" id="gaugeNumber">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="readouts">
+                <div class="readout">
+                  <div class="readout__k">FAILURE PROBABILITY</div>
+                  <div class="readout__v readout__v--accent" id="outProbability">—</div>
+                </div>
+                <div class="readout">
+                  <div class="readout__k">RISK LEVEL</div>
+                  <div class="readout__v readout__v--accent" id="gaugeLevel">—</div>
+                </div>
+                <div class="readout">
+                  <div class="readout__k">MACHINE STATUS</div>
+                  <div class="readout__v" id="machineState">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- --------------------- MACHINE STATUS CARDS ------------------- -->
+          <div class="monitors">
+            <div class="monitor" id="mon-temp" data-state="idle">
+              <div class="monitor__top">
+                <span class="monitor__name">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+                  TEMPERATURE
+                </span>
+                <span class="monitor__state">No data</span>
+              </div>
+              <div class="bar"><div class="bar__fill"></div></div>
+            </div>
+
+            <div class="monitor" id="mon-torque" data-state="idle">
+              <div class="monitor__top">
+                <span class="monitor__name">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="15" r="2"></circle><path d="M12 15l5-4"></path></svg>
+                  TORQUE
+                </span>
+                <span class="monitor__state">No data</span>
+              </div>
+              <div class="bar"><div class="bar__fill"></div></div>
+            </div>
+
+            <div class="monitor" id="mon-speed" data-state="idle">
+              <div class="monitor__top">
+                <span class="monitor__name">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"></path></svg>
+                  ROTATIONAL SPEED
+                </span>
+                <span class="monitor__state">No data</span>
+              </div>
+              <div class="bar"><div class="bar__fill"></div></div>
+            </div>
+
+            <div class="monitor" id="mon-wear" data-state="idle">
+              <div class="monitor__top">
+                <span class="monitor__name">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4"></path></svg>
+                  TOOL WEAR
+                </span>
+                <span class="monitor__state">No data</span>
+              </div>
+              <div class="bar"><div class="bar__fill"></div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================= FOOTER ============================= -->
+      <footer>
+        <div class="techbar reveal" data-delay="3">
+          <div class="techbar__item">
+            <div class="techbar__k">Model</div>
+            <div class="techbar__v">Machine Failure Risk Classifier</div>
+          </div>
+          <div class="techbar__item">
+            <div class="techbar__k">Dataset</div>
+            <div class="techbar__v">AI4I 2020 Predictive Maintenance Dataset</div>
+          </div>
+          <div class="techbar__item">
+            <div class="techbar__k">Application</div>
+            <div class="techbar__v">Predictive Maintenance</div>
+          </div>
+          <div class="techbar__item">
+            <div class="techbar__k">Framework</div>
+            <div class="techbar__v">Flask + Python</div>
+          </div>
+        </div>
+        <p class="copyright">Industrial AI monitoring console · Machine failure risk assessment</p>
+      </footer>
+    </div>
+
+    <!-- ==================================================================
+         BACKEND BRIDGE
+         The ONLY place backend values enter the UI. Pass whatever your
+         existing Flask route already returns; nothing is hard-coded.
+           prediction   -> 0 / 1  (None before a prediction)
+           probability  -> failure probability in percent, e.g. 12.4
+           risk_level   -> "LOW" / "MEDIUM" / "HIGH" (optional)
+         If probability is None the panel stays in "AWAITING ANALYSIS".
+         ================================================================== -->
+    <script>
+      window.PREDICTION_DATA = {
+        prediction: {{ prediction | tojson if prediction is defined else 'null' }},
+        probability: {{ probability | tojson if probability is defined else 'null' }},
+        risk_level: {{ risk_level | tojson if risk_level is defined else 'null' }}
+      };
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
