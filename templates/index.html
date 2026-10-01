@@ -6,427 +6,812 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Predictive Maintenance — Machine Failure Risk Assessment</title>
   <meta name="description"
-    content="AI-powered industrial dashboard for machine failure risk assessment using the AI4I 2020 predictive maintenance dataset." />
+    content="Industrial predictive maintenance control center with tuned XGBoost failure risk assessment on AI4I 2020 dataset." />
+  
+  <!-- Modern Clean Industrial Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 
-<body>
-  <div class="bg-layer" aria-hidden="true">
-    <div class="bg-grid"></div>
-    <div class="bg-glow bg-glow--a"></div>
-    <div class="bg-glow bg-glow--b"></div>
-    <div class="bg-scan"></div>
-    <div id="particles"></div>
-    <div class="bg-vignette"></div>
-  </div>
+<body class="industrial-theme">
+  <!-- Full-Page Industrial Factory / CNC Machine Background Layer -->
+  <div class="industrial-background" aria-hidden="true"></div>
 
-  <div class="shell">
+  <div class="control-shell">
 
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand__mark">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+    <!-- ==========================================
+         HEADER
+         ========================================== -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="system-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.09 3V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
-            </path>
+            <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+            <path d="M17 18h1" />
+            <path d="M12 18h1" />
+            <path d="M7 18h1" />
           </svg>
         </div>
-
-        <div>
-          <h1 class="brand__title">Predictive Maintenance — Machine Failure Risk Assessment</h1>
-          <p class="brand__sub">AI4I 2020 Dataset · ML Risk Classifier · Real-time analysis</p>
+        <div class="system-titles">
+          <h1 class="system-title">PREDICTIVE MAINTENANCE</h1>
+          <div class="system-subtitle-row">
+            <span class="system-sub-bold">MACHINE FAILURE RISK ASSESSMENT</span>
+            <span class="system-sep">·</span>
+            <span class="system-sub-meta">AI4I 2020 · Tuned XGBoost · Industrial Machine Monitoring</span>
+          </div>
         </div>
       </div>
 
-      <div class="status-pill">
-        <span class="dot"></span> SYSTEM ONLINE
+      <div class="header-right">
+        <div class="telemetry-pill">
+          <span class="telemetry-dot"></span>
+          <span class="telemetry-label">SYSTEM ONLINE</span>
+        </div>
+        <div class="header-badge timestamp-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span class="timestamp-text" id="liveTimestamp">25 Sep 2026 19:15:22</span>
+        </div>
       </div>
     </header>
 
-    <ol class="flow reveal" aria-label="Analysis flow">
-      <li class="flow__step is-active"><span class="flow__n">01</span> Enter machine parameters</li>
-      <li class="flow__step"><span class="flow__n">02</span> Run analysis</li>
-      <li class="flow__step"><span class="flow__n">03</span> Failure probability</li>
-      <li class="flow__step"><span class="flow__n">04</span> Risk level</li>
-      <li class="flow__step"><span class="flow__n">05</span> Machine status</li>
-    </ol>
+    <!-- Error Alert if any -->
+    {% if error %}
+    <div class="error-banner" role="alert">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
 
-    <div class="grid">
-
-      <section class="panel reveal" data-delay="1">
-
-        <div class="panel__head">
-          <div>
-            <h2 class="panel__title">Machine Parameters</h2>
-            <p class="panel__sub">Enter current machine operating conditions</p>
+    <!-- ==========================================
+         HERO / MACHINE OVERVIEW & MONITORING CONTEXT
+         ========================================== -->
+    <section class="section-hero">
+      <div class="hero-grid">
+        
+        <!-- Left: Industrial Machine Overview Card -->
+        <div class="panel-card machine-overview-panel">
+          <div class="panel-header-line">
+            <div class="section-title-wrap">
+              <span class="orange-bar"></span>
+              <h2 class="panel-title-text">INDUSTRIAL MACHINE OVERVIEW</h2>
+            </div>
           </div>
 
-          <span class="panel__tag">STEP 01 · INPUT</span>
+          <div class="machine-overview-content">
+            <!-- CNC Machining Photo Preview -->
+            <div class="machine-photo-frame">
+              <img src="{{ url_for('static', filename='assets/cnc_machine.jpg') }}" alt="CNC Milling Machining Center" class="machine-photo-img" />
+              <div class="photo-overlay-tag">5-AXIS CNC MILL</div>
+            </div>
+
+            <!-- Telemetry Status Grid -->
+            <div class="machine-telemetry-meta">
+              <div class="meta-row">
+                <div class="meta-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="20" rx="2" />
+                    <line x1="9" y1="2" x2="9" y2="22" />
+                  </svg>
+                </div>
+                <div class="meta-text">
+                  <span class="meta-label">MACHINE ID</span>
+                  <span class="meta-value">AI4I-CNC-01</span>
+                </div>
+              </div>
+
+              <div class="meta-row">
+                <div class="meta-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                </div>
+                <div class="meta-text">
+                  <span class="meta-label">MACHINE TYPE</span>
+                  <span class="meta-value" id="overviewTypeBadge">
+                    {% if request.form and request.form.machine_type %}
+                      {% if request.form.machine_type == 'H' %}H — High Quality Variant
+                      {% elif request.form.machine_type == 'M' %}M — Medium Quality Variant
+                      {% else %}L — Low Quality Variant{% endif %}
+                    {% else %}
+                      H — High Quality Variant
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+
+              <div class="meta-row">
+                <div class="meta-icon icon-green">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                  </svg>
+                </div>
+                <div class="meta-text">
+                  <span class="meta-label">SYSTEM STATUS</span>
+                  <span class="meta-value text-green">ONLINE</span>
+                </div>
+              </div>
+
+              <div class="meta-row">
+                <div class="meta-icon icon-amber">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                  </svg>
+                </div>
+                <div class="meta-text">
+                  <span class="meta-label">ANALYSIS STATUS</span>
+                  <span class="meta-value" id="heroAnalysisState">
+                    {% if probability is not none %}
+                      EVALUATED · {{ risk_level }} RISK
+                    {% else %}
+                      READY FOR INPUT
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="panel__body">
-
-          <form id="paramsForm" method="POST" action="{{ url_for('predict') }}">
-
-            <div class="field">
-              <div class="field__label">
-                <span class="field__name">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                  </svg>
-                  Air Temperature
-                </span>
-
-                <span class="field__unit">K</span>
-              </div>
-
-              <div class="field__control">
-                <input type="number" step="any" name="air_temperature" placeholder="298.1"
-                  value="{{ request.form.air_temperature if request.form else '' }}" required />
-              </div>
+        <!-- Right: Live Monitoring Context Card -->
+        <div class="panel-card live-context-panel">
+          <div class="panel-header-line">
+            <div class="section-title-wrap">
+              <span class="orange-bar"></span>
+              <h2 class="panel-title-text">LIVE MONITORING CONTEXT</h2>
             </div>
-
-
-            <div class="field">
-              <div class="field__label">
-                <span class="field__name">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <path d="M12 9a4 4 0 0 0-2 7.5"></path>
-                    <path d="M12 3v2"></path>
-                    <circle cx="12" cy="12" r="9"></circle>
-                  </svg>
-                  Process Temperature
-                </span>
-
-                <span class="field__unit">K</span>
-              </div>
-
-              <div class="field__control">
-                <input type="number" step="any" name="process_temperature" placeholder="308.6"
-                  value="{{ request.form.process_temperature if request.form else '' }}" required />
-              </div>
-            </div>
-
-
-            <div class="field">
-              <div class="field__label">
-                <span class="field__name">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-                    <path d="M21 3v6h-6"></path>
-                  </svg>
-                  Rotational Speed
-                </span>
-
-                <span class="field__unit">rpm</span>
-              </div>
-
-              <div class="field__control">
-                <input type="number" step="any" name="rotational_speed" placeholder="1551"
-                  value="{{ request.form.rotational_speed if request.form else '' }}" required />
-              </div>
-            </div>
-
-
-            <div class="field">
-              <div class="field__label">
-                <span class="field__name">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <path d="M12 3v3"></path>
-                    <path d="M4.2 7.2 6.3 9.3"></path>
-                    <path d="M3 15h3"></path>
-                    <path d="M18 15h3"></path>
-                    <path d="M12 15l5-4"></path>
-                    <circle cx="12" cy="15" r="2"></circle>
-                  </svg>
-                  Torque
-                </span>
-
-                <span class="field__unit">Nm</span>
-              </div>
-
-              <div class="field__control">
-                <input type="number" step="any" name="torque" placeholder="42.8"
-                  value="{{ request.form.torque if request.form else '' }}" required />
-              </div>
-            </div>
-
-
-            <div class="field">
-              <div class="field__label">
-                <span class="field__name">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l-2.6 2.6"></path>
-                  </svg>
-                  Tool Wear
-                </span>
-
-                <span class="field__unit">min</span>
-              </div>
-
-              <div class="field__control">
-                <input type="number" step="any" name="tool_wear" placeholder="120"
-                  value="{{ request.form.tool_wear if request.form else '' }}" required />
-              </div>
-            </div>
-
-
-            <div class="field">
-              <div class="field__label">
-                <span class="field__name">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="8"></circle>
-                    <path d="M12 8v4l3 2"></path>
-                  </svg>
-                  Machine Type
-                </span>
-
-                <span class="field__unit">Type</span>
-              </div>
-
-              <div class="field__control">
-                <select name="machine_type" required>
-                  <option value="H" {% if request.form.machine_type=='H' %}selected{% endif %}>
-                    H — High
-                  </option>
-                  <option value="M" {% if request.form.machine_type=='M' %}selected{% endif %}>
-                    M — Medium
-                  </option>
-                  <option value="L" {% if request.form.machine_type=='L' %}selected{% endif %}>
-                    L — Low
-                  </option>
-                </select>
-              </div>
-            </div>
-
-
-            <button type="submit" class="btn-analyze" id="analyzeBtn">
-              ANALYZE MACHINE
-            </button>
-
-            <p class="form-note">
-              Parameters are evaluated by the trained failure-risk classifier.
-            </p>
-
-          </form>
-        </div>
-      </section>
-
-
-      <section class="panel risk reveal" id="riskPanel" data-delay="2">
-
-        <div class="panel__head">
-          <div>
-            <h2 class="panel__title">Failure Risk</h2>
-            <p class="panel__sub">Model output for the submitted operating point</p>
           </div>
 
-          <span class="panel__tag">OUTPUT</span>
-        </div>
+          <div class="context-grid">
+            <div class="context-cell">
+              <div class="context-cell-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+              </div>
+              <div class="context-cell-text">
+                <span class="c-k">Environment</span>
+                <span class="c-v">Factory Floor</span>
+              </div>
+            </div>
 
-        <div class="panel__body">
+            <div class="context-cell">
+              <div class="context-cell-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              </div>
+              <div class="context-cell-text">
+                <span class="c-k">Monitoring</span>
+                <span class="c-v">Sensor Telemetry</span>
+              </div>
+            </div>
 
-          <div class="idle" id="riskIdle">
-            <div class="idle__ring">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round">
-                <circle cx="12" cy="12" r="9"></circle>
-                <path d="M12 7v5l3 2"></path>
+            <div class="context-cell">
+              <div class="context-cell-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              </div>
+              <div class="context-cell-text">
+                <span class="c-k">Model</span>
+                <span class="c-v">Tuned XGBoost</span>
+              </div>
+            </div>
+
+            <div class="context-cell">
+              <div class="context-cell-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <ellipse cx="12" cy="5" rx="9" ry="3" />
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                </svg>
+              </div>
+              <div class="context-cell-text">
+                <span class="c-k">Dataset</span>
+                <span class="c-v">AI4I 2020</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context Sub-Callout Banner -->
+          <div class="context-callout-box">
+            <div class="callout-left-border"></div>
+            <div class="callout-body">
+              <p class="callout-text">
+                Real-time machine operating conditions are analyzed using a trained machine learning model to estimate the probability of machine failure.
+              </p>
+            </div>
+            <div class="callout-gear">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.09 3V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
             </div>
+          </div>
+        </div>
 
-            <div class="idle__title">AWAITING ANALYSIS</div>
+      </div>
+    </section>
 
-            <p class="idle__text">
-              Enter the machine parameters and run the analysis to generate a failure-risk
-              assessment.
+
+    <!-- ==========================================
+         01. OPERATING CONDITIONS (6 SENSOR INPUTS)
+         ========================================== -->
+    <section class="panel-card section-conditions-card" id="operating-conditions">
+      <div class="panel-header-line">
+        <div class="section-title-wrap">
+          <span class="orange-bar"></span>
+          <div>
+            <h2 class="panel-title-text">01 &nbsp;OPERATING CONDITIONS</h2>
+            <p class="panel-subtitle-text">Enter current sensor readings for the machine</p>
+          </div>
+        </div>
+        <span class="panel-chip">6 SENSOR INPUTS</span>
+      </div>
+
+      <form id="paramsForm" method="POST" action="{{ url_for('predict') }}" class="telemetry-form">
+        
+        <div class="sensor-inputs-row">
+          
+          <!-- Input 1: Air Temperature -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                </svg>
+                <span>Air Temperature</span>
+              </div>
+              <span class="sensor-unit">K</span>
+            </div>
+            <div class="sensor-input-box">
+              <input type="number" step="0.1" min="200" max="400" name="air_temperature" id="inputAirTemp" placeholder="300.0"
+                value="{{ request.form.air_temperature if request.form else '300' }}" required />
+            </div>
+            <div class="sensor-invalid-msg" id="msgAirTemp" aria-live="polite"></div>
+            <div class="sensor-extrapolate-msg" id="extAirTemp"></div>
+            <div class="sensor-range-hint">Supported input: 200 – 400 K</div>
+          </div>
+
+          <!-- Input 2: Process Temperature -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <path d="M12 9a4 4 0 0 0-2 7.5" />
+                  <path d="M12 3v2" />
+                  <circle cx="12" cy="12" r="9" />
+                </svg>
+                <span>Process Temperature</span>
+              </div>
+              <span class="sensor-unit">K</span>
+            </div>
+            <div class="sensor-input-box">
+              <input type="number" step="0.1" min="200" max="450" name="process_temperature" id="inputProcTemp" placeholder="310.0"
+                value="{{ request.form.process_temperature if request.form else '310' }}" required />
+            </div>
+            <div class="sensor-invalid-msg" id="msgProcTemp" aria-live="polite"></div>
+            <div class="sensor-extrapolate-msg" id="extProcTemp"></div>
+            <div class="sensor-range-hint">Supported input: 200 – 450 K</div>
+          </div>
+
+          <!-- Input 3: Rotational Speed -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                  <path d="M21 12a9 9 0 1 1-3-6.7" />
+                  <path d="M21 3v6h-6" />
+                </svg>
+                <span>Rotational Speed</span>
+              </div>
+              <span class="sensor-unit">rpm</span>
+            </div>
+            <div class="sensor-input-box">
+              <input type="number" step="1" min="100" max="6000" name="rotational_speed" id="inputSpeed" placeholder="1400"
+                value="{{ request.form.rotational_speed if request.form else '1400' }}" required />
+            </div>
+            <div class="sensor-invalid-msg" id="msgSpeed" aria-live="polite"></div>
+            <div class="sensor-extrapolate-msg" id="extSpeed"></div>
+            <div class="sensor-range-hint">Supported input: 100 – 6000 rpm</div>
+          </div>
+
+          <!-- Input 4: Torque -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <path d="M12 3v3" />
+                  <path d="M4.2 7.2 6.3 9.3" />
+                  <path d="M3 15h3" />
+                  <path d="M18 15h3" />
+                  <path d="M12 15l5-4" />
+                  <circle cx="12" cy="15" r="2" />
+                </svg>
+                <span>Torque</span>
+              </div>
+              <span class="sensor-unit">Nm</span>
+            </div>
+            <div class="sensor-input-box">
+              <input type="number" step="0.1" min="0" max="150" name="torque" id="inputTorque" placeholder="30.0"
+                value="{{ request.form.torque if request.form else '30' }}" required />
+            </div>
+            <div class="sensor-invalid-msg" id="msgTorque" aria-live="polite"></div>
+            <div class="sensor-extrapolate-msg" id="extTorque"></div>
+            <div class="sensor-range-hint">Supported input: 0 – 150 Nm</div>
+          </div>
+
+          <!-- Input 5: Tool Wear -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l-2.6 2.6" />
+                </svg>
+                <span>Tool Wear</span>
+              </div>
+              <span class="sensor-unit">min</span>
+            </div>
+            <div class="sensor-input-box">
+              <input type="number" step="1" min="0" max="500" name="tool_wear" id="inputWear" placeholder="20"
+                value="{{ request.form.tool_wear if request.form else '20' }}" required />
+            </div>
+            <div class="sensor-invalid-msg" id="msgWear" aria-live="polite"></div>
+            <div class="sensor-extrapolate-msg" id="extWear"></div>
+            <div class="sensor-range-hint">Supported input: 0 – 500 min</div>
+          </div>
+
+          <!-- Input 6: Machine Type -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                <span>Machine Type</span>
+              </div>
+              <span class="sensor-unit">Type</span>
+            </div>
+            <div class="sensor-input-box select-wrapper">
+              <select name="machine_type" id="selectType" required>
+                <option value="H" {% if request.form.machine_type=='H' or not request.form %}selected{% endif %}>
+                  H — High
+                </option>
+                <option value="M" {% if request.form.machine_type=='M' %}selected{% endif %}>
+                  M — Medium
+                </option>
+                <option value="L" {% if request.form.machine_type=='L' %}selected{% endif %}>
+                  L — Low
+                </option>
+              </select>
+            </div>
+            <div class="sensor-range-hint">Select machine variant</div>
+          </div>
+
+        </div>
+
+        <!-- Action Row & Preset Bar -->
+        <div class="form-action-row">
+          <button type="submit" class="btn-analyze-orange" id="analyzeBtn">
+            <span class="play-icon">▷</span>
+            <span id="analyzeBtnLabel">ANALYZE MACHINE</span>
+          </button>
+
+          <div class="action-meta-info">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            <span>Submitting invokes the Tuned XGBoost classifier with engineered features (ΔT and Tool Wear quantiles) for failure risk assessment.</span>
+          </div>
+
+          <div class="preset-pills">
+            <button type="button" class="btn-quick-preset" id="presetNormalBtn" title="Load Normal Baseline">
+              <span class="p-dot dot-green"></span> Normal Baseline
+            </button>
+            <button type="button" class="btn-quick-preset" id="presetRiskBtn" title="Load High Risk Stress">
+              <span class="p-dot dot-red"></span> High Risk Stress
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </section>
+
+
+    <!-- ==========================================
+         02. PREDICTIVE RISK ASSESSMENT (4-CARD GRID)
+         ========================================== -->
+    <section class="panel-card section-risk-card" id="risk-assessment">
+      <div class="panel-header-line">
+        <div class="section-title-wrap">
+          <span class="orange-bar"></span>
+          <div>
+            <h2 class="panel-title-text">02 &nbsp;PREDICTIVE RISK ASSESSMENT</h2>
+            <p class="panel-subtitle-text">Model output for the submitted operating conditions</p>
+          </div>
+        </div>
+        <span class="panel-chip">RESULTS</span>
+      </div>
+
+      <div class="risk-quad-grid">
+        
+        <!-- Card 1: Failure Probability -->
+        <div class="risk-sub-card card-prob">
+          <div class="sub-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              <polyline points="17 6 23 6 23 12" />
+            </svg>
+            <span>FAILURE PROBABILITY</span>
+          </div>
+
+          <div class="prob-number-large" id="outProbability">
+            {{ probability if probability is not none else '0.02' }}%
+          </div>
+
+          <div class="prob-progress-wrap">
+            <div class="prob-progress-bar">
+              <div class="prob-progress-fill" id="probBarFill" style="width: {{ probability if probability is not none else 0.02 }}%;"></div>
+            </div>
+            <div class="prob-scale-labels">
+              <span>0% (Low)</span>
+              <span>20% (Med)</span>
+              <span>50% (High)</span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Risk Level -->
+        <div class="risk-sub-card card-risk-level">
+          <div class="sub-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>RISK LEVEL</span>
+          </div>
+
+          <div class="risk-pill-badge badge-{{ (risk_level|lower) if risk_level else 'low' }}" id="outRiskLevel">
+            {{ risk_level if risk_level else 'LOW' }}
+          </div>
+
+          <div class="risk-threshold-list">
+            <div class="t-row">
+              <span class="t-dot dot-green"></span>
+              <span class="t-name">LOW RISK</span>
+              <span class="t-val">&lt; 20%</span>
+            </div>
+            <div class="t-row">
+              <span class="t-dot dot-amber"></span>
+              <span class="t-name">MEDIUM RISK</span>
+              <span class="t-val">20% – &lt; 50%</span>
+            </div>
+            <div class="t-row">
+              <span class="t-dot dot-red"></span>
+              <span class="t-name">HIGH RISK</span>
+              <span class="t-val">≥ 50%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Machine Status -->
+        <div class="risk-sub-card card-machine-status">
+          <div class="sub-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <span>MACHINE STATUS</span>
+          </div>
+
+          <div class="machine-status-pill pill-{{ 'high' if prediction == 1 else 'low' }}" id="outMachineStatus">
+            {% if prediction == 1 %}MAINTENANCE REQUIRED{% else %}NORMAL{% endif %}
+          </div>
+
+          <div class="model-interpretation-box">
+            <span class="interp-head">MODEL INTERPRETATION</span>
+            <p class="interp-text" id="outInterpretationText">
+              {% if risk_level == 'HIGH' %}
+                The model identifies a high predicted failure risk based on the submitted operating conditions. Maintenance inspection recommended.
+              {% elif risk_level == 'MEDIUM' %}
+                The model identifies elevated failure risk based on the submitted operating conditions. Continued observation advised.
+              {% else %}
+                Equipment operates within safe empirical tolerances (Class 0). Normal monitoring maintained.
+              {% endif %}
             </p>
           </div>
+        </div>
 
+        <!-- Card 4: Key Metrics (Test Set) -->
+        <div class="risk-sub-card card-key-metrics">
+          <div class="sub-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            <span>KEY METRICS (TEST SET)</span>
+          </div>
 
-          <div class="risk-foot" id="riskResult" hidden>
-
-            <div class="gauge-wrap">
-              <div class="gauge">
-
-                <div class="gauge__halo"></div>
-
-                <svg viewBox="0 0 260 260">
-                  <circle class="gauge__track" cx="130" cy="130" r="110">
-                  </circle>
-
-                  <circle class="gauge__value" id="gaugeArc" cx="130" cy="130" r="110" stroke-dasharray="691.15 691.15"
-                    stroke-dashoffset="691.15">
-                  </circle>
-                </svg>
-
-                <div class="gauge__center">
-                  <div class="gauge__caption">
-                    FAILURE PROBABILITY
-                  </div>
-
-                  <div class="gauge__number" id="gaugeNumber">
-                    —
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-
-            <div class="readouts">
-
-              <div class="readout">
-                <div class="readout__k">
-                  FAILURE PROBABILITY
-                </div>
-
-                <div class="readout__v readout__v--accent" id="outProbability">
-                  —
-                </div>
-              </div>
-
-
-              <div class="readout">
-                <div class="readout__k">
-                  RISK LEVEL
-                </div>
-
-                <div class="readout__v readout__v--accent" id="gaugeLevel">
-                  —
-                </div>
-              </div>
-
-
-              <div class="readout">
-                <div class="readout__k">
-                  MACHINE STATUS
-                </div>
-
-                <div class="readout__v" id="machineState">
-                  —
-                </div>
-              </div>
-
-            </div>
+          <div class="metrics-spec-table">
+            <div class="m-row"><span class="m-k">Model</span><span class="m-v">Tuned XGBoost</span></div>
+            <div class="m-row"><span class="m-k">Dataset</span><span class="m-v">AI4I 2020</span></div>
+            <div class="m-row"><span class="m-k">Features</span><span class="m-v">9 (6 raw + 2 engineered + Type)</span></div>
+            <div class="m-row"><span class="m-k">Validation</span><span class="m-v">Stratified 5-Fold CV</span></div>
+            <div class="m-row"><span class="m-k">F1 Score</span><span class="m-v text-highlight">81.16%</span></div>
+            <div class="m-row"><span class="m-k">ROC-AUC</span><span class="m-v text-highlight">97.17%</span></div>
           </div>
         </div>
 
+      </div>
 
-        <div class="monitors">
-
-          <div class="monitor" id="mon-temp" data-state="idle">
-            <div class="monitor__top">
-              <span class="monitor__name">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                </svg>
-                TEMPERATURE
-              </span>
-
-              <span class="monitor__state">
-                No data
-              </span>
-            </div>
-
-            <div class="bar">
-              <div class="bar__fill"></div>
-            </div>
-          </div>
-
-
-          <div class="monitor" id="mon-torque" data-state="idle">
-            <div class="monitor__top">
-              <span class="monitor__name">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="15" r="2"></circle>
-                  <path d="M12 15l5-4"></path>
-                </svg>
-                TORQUE
-              </span>
-
-              <span class="monitor__state">
-                No data
-              </span>
-            </div>
-
-            <div class="bar">
-              <div class="bar__fill"></div>
-            </div>
-          </div>
-
-
-          <div class="monitor" id="mon-speed" data-state="idle">
-            <div class="monitor__top">
-              <span class="monitor__name">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-                </svg>
-                ROTATIONAL SPEED
-              </span>
-
-              <span class="monitor__state">
-                No data
-              </span>
-            </div>
-
-            <div class="bar">
-              <div class="bar__fill"></div>
-            </div>
-          </div>
-
-
-          <div class="monitor" id="mon-wear" data-state="idle">
-            <div class="monitor__top">
-              <span class="monitor__name">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4"></path>
-                </svg>
-                TOOL WEAR
-              </span>
-
-              <span class="monitor__state">
-                No data
-              </span>
-            </div>
-
-            <div class="bar">
-              <div class="bar__fill"></div>
-            </div>
-          </div>
-
+      <!-- Training Distribution Extrapolation Warning Banner -->
+      <div class="distribution-warning-banner" id="distributionWarningBanner" style="display: {% if training_warning %}flex{% else %}none{% endif %};">
+        <div class="warning-banner-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
         </div>
-      </section>
-    </div>
+        <div class="warning-banner-text">
+          <span class="warning-title">⚠ Outside Model Training Range</span>
+          <span class="warning-desc" id="distributionWarningText">
+            {% if training_warning and out_of_dist_features %}
+              Operating conditions ({{ out_of_dist_features|join(', ') }}) are outside the observed AI4I 2020 training distribution. Prediction is provided, but model confidence may be reduced due to extrapolation.
+            {% else %}
+              Operating conditions are outside the observed AI4I 2020 training distribution. Prediction is provided, but confidence may be reduced.
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </section>
 
 
-    <footer>
-      <p class="copyright">
-        Industrial AI monitoring console · Machine failure risk assessment
-      </p>
+    <!-- ==========================================
+         03. SUBMITTED MACHINE TELEMETRY SUMMARY
+         ========================================== -->
+    {% if request.form and request.form.air_temperature and prediction is not none %}
+    <section class="panel-card section-summary-card" id="telemetry-summary">
+      <div class="panel-header-line">
+        <div class="section-title-wrap">
+          <span class="orange-bar"></span>
+          <div>
+            <h2 class="panel-title-text">03 &nbsp;SUBMITTED MACHINE TELEMETRY SUMMARY</h2>
+            <p class="panel-subtitle-text">Active operational parameters submitted to the classification pipeline</p>
+          </div>
+        </div>
+        <span class="panel-chip">INPUT SUMMARY</span>
+      </div>
+
+      <div class="summary-table-grid">
+        <div class="sum-cell">
+          <span class="sum-label">AIR TEMP</span>
+          <span class="sum-value">{{ request.form.air_temperature }} <span class="sum-unit">K</span></span>
+        </div>
+        <div class="sum-cell">
+          <span class="sum-label">PROCESS TEMP</span>
+          <span class="sum-value">{{ request.form.process_temperature }} <span class="sum-unit">K</span></span>
+        </div>
+        <div class="sum-cell">
+          <span class="sum-label">TEMP DELTA (ΔT)</span>
+          <span class="sum-value">{{ (request.form.process_temperature|float - request.form.air_temperature|float)|round(2) }} <span class="sum-unit">K</span></span>
+        </div>
+        <div class="sum-cell">
+          <span class="sum-label">ROTATIONAL SPEED</span>
+          <span class="sum-value">{{ request.form.rotational_speed }} <span class="sum-unit">rpm</span></span>
+        </div>
+        <div class="sum-cell">
+          <span class="sum-label">TORQUE</span>
+          <span class="sum-value">{{ request.form.torque }} <span class="sum-unit">Nm</span></span>
+        </div>
+        <div class="sum-cell">
+          <span class="sum-label">TOOL WEAR</span>
+          <span class="sum-value">{{ request.form.tool_wear }} <span class="sum-unit">min</span></span>
+        </div>
+        <div class="sum-cell">
+          <span class="sum-label">MACHINE TYPE</span>
+          <span class="sum-value">TYPE {{ request.form.machine_type }}</span>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+
+    <!-- ==========================================
+         04. RECOMMENDED ACTION
+         ========================================== -->
+    <section class="panel-card section-action-card" id="recommended-action">
+      <div class="panel-header-line">
+        <div class="section-title-wrap">
+          <span class="orange-bar"></span>
+          <div>
+            <h2 class="panel-title-text">04 &nbsp;RECOMMENDED MAINTENANCE ACTION</h2>
+            <p class="panel-subtitle-text">Prescriptive operational guidance dynamically matched to predicted failure risk level</p>
+          </div>
+        </div>
+        <span class="panel-chip">SOP PROTOCOL</span>
+      </div>
+
+      <div class="action-card-content">
+        <div class="action-badge-row">
+          <div class="action-alert-badge badge-{{ (risk_level|lower) if risk_level else 'low' }}">
+            <span class="alert-dot"></span>
+            <span id="actionHeaderTitle">
+              {% if risk_level == 'HIGH' %}
+                CRITICAL ALERT — IMMEDIATE INSPECTION REQUIRED
+              {% elif risk_level == 'MEDIUM' %}
+                ELEVATED CAUTION — SCHEDULE INSPECTION
+              {% else %}
+                NORMAL STATUS — CONTINUE MONITORING
+              {% endif %}
+            </span>
+          </div>
+          <span class="action-protocol-tag">SOP REF: PM-AI4I-01</span>
+        </div>
+
+        <p class="action-main-text" id="actionPrimaryText">
+          {% if risk_level == 'HIGH' %}
+            Inspect the machine and investigate the contributing operating conditions.
+          {% elif risk_level == 'MEDIUM' %}
+            Monitor operating conditions and consider a maintenance inspection.
+          {% else %}
+            Continue normal monitoring.
+          {% endif %}
+        </p>
+
+        <div class="action-steps-grid">
+          <div class="step-card">
+            <span class="step-badge">STEP 1</span>
+            <span class="step-desc" id="actionStep1">
+              {% if risk_level == 'HIGH' %}
+                Halt active high-load milling cycles to prevent cutter fracture.
+              {% elif risk_level == 'MEDIUM' %}
+                Log vibration and thermal telemetry for shift review.
+              {% else %}
+                Maintain standard operating telemetry logging and routine shift checks.
+              {% endif %}
+            </span>
+          </div>
+          <div class="step-card">
+            <span class="step-badge">STEP 2</span>
+            <span class="step-desc" id="actionStep2">
+              {% if risk_level == 'HIGH' %}
+                Perform physical inspection of tool edge wear and spindle torque coupling.
+              {% elif risk_level == 'MEDIUM' %}
+                Schedule replacement of tool insert prior to next continuous production run.
+              {% else %}
+                Follow standard tool replacement schedule per planned maintenance window.
+              {% endif %}
+            </span>
+          </div>
+          <div class="step-card">
+            <span class="step-badge">STEP 3</span>
+            <span class="step-desc" id="actionStep3">
+              {% if risk_level == 'HIGH' %}
+                Re-evaluate operating temperature delta and verify coolant delivery pressure.
+              {% elif risk_level == 'MEDIUM' %}
+                Verify coolant flow and ensure process temperature stays below thermal threshold.
+              {% else %}
+                Continue standard production cycle within nominal parameters.
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         05. MODEL INFORMATION & TECHNICAL SPECIFICATIONS
+         ========================================== -->
+    <section class="panel-card section-model-spec-card" id="model-info">
+      <div class="panel-header-line">
+        <div class="section-title-wrap">
+          <span class="orange-bar"></span>
+          <div>
+            <h2 class="panel-title-text">05 &nbsp;MODEL INFORMATION &amp; TECHNICAL SPECIFICATIONS</h2>
+            <p class="panel-subtitle-text">Validated machine learning architecture, dataset provenance, and benchmark test metrics</p>
+          </div>
+        </div>
+        <span class="panel-chip">SPECIFICATIONS</span>
+      </div>
+
+      <div class="model-spec-grid-6">
+        <div class="model-spec-item">
+          <div class="spec-k">MODEL ARCHITECTURE</div>
+          <div class="spec-v">Tuned XGBoost</div>
+          <div class="spec-sub">Gradient boosted decision tree classifier</div>
+        </div>
+
+        <div class="model-spec-item">
+          <div class="spec-k">DATASET</div>
+          <div class="spec-v">AI4I 2020</div>
+          <div class="spec-sub">10,000 synthetic industrial records</div>
+        </div>
+
+        <div class="model-spec-item">
+          <div class="spec-k">FEATURES</div>
+          <div class="spec-v">9 Features</div>
+          <div class="spec-sub">6 raw sensors + 2 engineered + Type encoding</div>
+        </div>
+
+        <div class="model-spec-item">
+          <div class="spec-k">VALIDATION</div>
+          <div class="spec-v">Stratified 5-Fold CV</div>
+          <div class="spec-sub">RandomizedSearchCV cross-validation</div>
+        </div>
+
+        <div class="model-spec-item highlight-metric-card">
+          <div class="spec-k">TEST F1 SCORE</div>
+          <div class="spec-v text-metric">81.16%</div>
+          <div class="spec-sub">Precision-recall harmonic balance</div>
+        </div>
+
+        <div class="model-spec-item highlight-metric-card">
+          <div class="spec-k">TEST ROC-AUC</div>
+          <div class="spec-v text-metric">97.17%</div>
+          <div class="spec-sub">Area Under ROC Curve</div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <div class="footer-left">
+          <span class="footer-brand">PREDICTIVE MAINTENANCE CONTROL CONSOLE</span>
+          <span class="footer-sep">|</span>
+          <span class="footer-text">Machine Failure Risk Assessment &amp; Telemetry Monitoring</span>
+        </div>
+        <div class="footer-right">
+          <span class="footer-sub">AI4I 2020 Predictive Maintenance Dataset · Tuned XGBoost</span>
+        </div>
+      </div>
     </footer>
 
   </div>
 
-
+  <!-- Backend Bridge: Preserves existing structure -->
   <script>
     window.PREDICTION_DATA = {
       "prediction": {{ prediction | tojson }},
       "probability": {{ probability | tojson }},
-      "risk_level": {{ risk_level | tojson }}
+      "risk_level": {{ risk_level | tojson }},
+      "training_warning": {{ (training_warning or false) | tojson }},
+      "out_of_dist_features": {{ (out_of_dist_features or []) | tojson }}
     };
   </script>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 </body>
 
 </html>
