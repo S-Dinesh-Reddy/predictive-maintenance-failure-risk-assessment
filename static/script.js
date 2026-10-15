@@ -401,6 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("keydown", (e) => handleKeyDown(e, config));
 
       el.addEventListener("input", () => {
+        clearPresetHighlights();
         const valid = validateField(el, config);
         if (!valid) {
           // Hard invalid -> clear old results
@@ -413,6 +414,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
+
+  /**
+   * Clear active visual indicator from preset buttons
+   */
+  function clearPresetHighlights() {
+    if (presetNormalBtn) presetNormalBtn.classList.remove("is-active-preset");
+    if (presetRiskBtn) presetRiskBtn.classList.remove("is-active-preset");
+  }
+
+  if (selectType) {
+    selectType.addEventListener("change", clearPresetHighlights);
+  }
 
   /**
    * Load Test Bench Presets
@@ -442,12 +455,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (presetNormalBtn) {
     presetNormalBtn.addEventListener("click", () => {
+      clearPresetHighlights();
+      presetNormalBtn.classList.add("is-active-preset");
       loadPreset(300, 310, 1400, 30, 20, "H");
     });
   }
 
   if (presetRiskBtn) {
     presetRiskBtn.addEventListener("click", () => {
+      clearPresetHighlights();
+      presetRiskBtn.classList.add("is-active-preset");
       loadPreset(300, 310, 1300, 65, 200, "L");
     });
   }
@@ -468,8 +485,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (analyzeBtn) {
         analyzeBtn.disabled = true;
+        analyzeBtn.classList.add("is-loading");
         if (analyzeBtnLabel) {
-          analyzeBtnLabel.textContent = "ANALYZING...";
+          analyzeBtnLabel.textContent = "ANALYZING TELEMETRY...";
         }
       }
     });

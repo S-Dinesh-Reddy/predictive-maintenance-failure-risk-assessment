@@ -1,0 +1,172 @@
+{
+    "model_name": "Tuned XGBoost Classifier",
+    "algorithm": "Gradient Boosted Decision Trees",
+    "dataset": "AI4I 2020 Predictive Maintenance Dataset",
+    "target_column": "Machine failure",
+    "operating_threshold": 0.5,
+    "features": [
+        "Air_temperature",
+        "Process_temperature",
+        "Rotational_speed",
+        "Torque",
+        "Tool_wear",
+        "Type_L",
+        "Type_M",
+        "Temperature_difference",
+        "Tool_wear_level"
+    ],
+    "test_metrics": {
+        "accuracy": 0.9865,
+        "precision": 0.7887323943661971,
+        "recall": 0.8235294117647058,
+        "f1": 0.8057553956834532,
+        "roc_auc": 0.9758098891730607,
+        "average_precision": 0.8600973553666148,
+        "mse": 0.011685566045343876,
+        "rmse": 0.10809979669427633,
+        "brier_score": 0.011685566045343876,
+        "log_loss": 0.05314264073967934,
+        "error_rate": 0.013499999999999956,
+        "tp": 56,
+        "tn": 1917,
+        "fp": 15,
+        "fn": 12,
+        "specificity": 0.9922360248447205,
+        "balanced_accuracy": 0.9078827183047131,
+        "mcc": 0.7989655061088082
+    },
+    "cv_metrics": {
+        "f1_mean": 0.7783182035355949,
+        "f1_std": 0.027639389943927672,
+        "recall_mean": 0.7713804713804715,
+        "recall_std": 0.043698463522983504,
+        "precision_mean": 0.7877917068466731,
+        "precision_std": 0.03688859474877575,
+        "roc_auc_mean": 0.9685117331730076,
+        "roc_auc_std": 0.011783000165336505,
+        "ap_mean": 0.8087080769917045,
+        "ap_std": 0.03656292375934676
+    },
+    "leaderboard": [
+        {
+            "Model": "Logistic Regression",
+            "Test F1": 0.26280623608017817,
+            "Test Recall": 0.8676470588235294,
+            "Test Precision": 0.15485564304461943,
+            "Test ROC-AUC": 0.9138579344781391,
+            "Test AP": 0.4047898873102597,
+            "Test FN": 9,
+            "Test FP": 322,
+            "Brier Score": 0.11991220486223428,
+            "CV F1 Mean": 0.24326430096476703,
+            "CV F1 Std": 0.012138211418358845
+        },
+        {
+            "Model": "Decision Tree",
+            "Test F1": 0.5116279069767442,
+            "Test Recall": 0.8088235294117647,
+            "Test Precision": 0.3741496598639456,
+            "Test ROC-AUC": 0.8431943429545731,
+            "Test AP": 0.7151441529557627,
+            "Test FN": 13,
+            "Test FP": 92,
+            "Brier Score": 0.03993505536433139,
+            "CV F1 Mean": 0.5027463430500771,
+            "CV F1 Std": 0.020410274177220977
+        },
+        {
+            "Model": "Random Forest",
+            "Test F1": 0.7215189873417721,
+            "Test Recall": 0.8382352941176471,
+            "Test Precision": 0.6333333333333333,
+            "Test ROC-AUC": 0.9790448788210937,
+            "Test AP": 0.8392578321730962,
+            "Test FN": 11,
+            "Test FP": 33,
+            "Brier Score": 0.018709826787283217,
+            "CV F1 Mean": 0.6875797092288243,
+            "CV F1 Std": 0.042433857249207944
+        },
+        {
+            "Model": "SVM (RBF)",
+            "Test F1": 0.5555555555555556,
+            "Test Recall": 0.4411764705882353,
+            "Test Precision": 0.75,
+            "Test ROC-AUC": 0.96782517354768,
+            "Test AP": 0.6592952572429055,
+            "Test FN": 38,
+            "Test FP": 10,
+            "Brier Score": 0.01836029734225645,
+            "CV F1 Mean": 0.4972753249148261,
+            "CV F1 Std": 0.09290863022415632
+        },
+        {
+            "Model": "XGBoost (Baseline)",
+            "Test F1": 0.6628571428571428,
+            "Test Recall": 0.8529411764705882,
+            "Test Precision": 0.5420560747663551,
+            "Test ROC-AUC": 0.9762894288150042,
+            "Test AP": 0.845028879563589,
+            "Test FN": 10,
+            "Test FP": 49,
+            "Brier Score": 0.02045491337776184,
+            "CV F1 Mean": 0.6930801388152913,
+            "CV F1 Std": 0.050679224509022666
+        },
+        {
+            "Model": "Tuned XGBoost",
+            "Test F1": 0.8057553956834532,
+            "Test Recall": 0.8235294117647058,
+            "Test Precision": 0.7887323943661971,
+            "Test ROC-AUC": 0.9758098891730607,
+            "Test AP": 0.8600973553666148,
+            "Test FN": 12,
+            "Test FP": 15,
+            "Brier Score": 0.011685566045343876,
+            "CV F1 Mean": 0.7783182035355949,
+            "CV F1 Std": 0.027639389943927672
+        }
+    ],
+    "training_distributions": {
+        "air_temperature": {
+            "min": 295.3,
+            "max": 304.5,
+            "unit": "K"
+        },
+        "process_temperature": {
+            "min": 305.7,
+            "max": 313.8,
+            "unit": "K"
+        },
+        "rotational_speed": {
+            "min": 1168.0,
+            "max": 2886.0,
+            "unit": "rpm"
+        },
+        "torque": {
+            "min": 3.8,
+            "max": 76.6,
+            "unit": "Nm"
+        },
+        "tool_wear": {
+            "min": 0.0,
+            "max": 253.0,
+            "unit": "min"
+        }
+    },
+    "risk_tiers": {
+        "low": {
+            "max_probability": 20.0,
+            "action": "Normal monitoring maintained."
+        },
+        "medium": {
+            "min_probability": 20.0,
+            "max_probability": 50.0,
+            "action": "Elevated caution \u2014 schedule routine inspection."
+        },
+        "high": {
+            "min_probability": 50.0,
+            "action": "Critical alert \u2014 immediate tool inspection required."
+        }
+    }
+}
