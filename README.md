@@ -12,7 +12,7 @@ The project implements a leakage-safe pipeline across data preprocessing, 5-fold
 AI4I 2020 Dataset (10,000 records)
        │
        ▼
-Phase 1: Preprocessing & Leakage Elimination (notebooks/Phase_1_Data_Preprocessing.ipynb - 63 cells)
+Phase 1: Preprocessing & Leakage Elimination (notebooks/Phase_1_Data_Preprocessing.ipynb - 66 cells)
   • Remove identifier columns (UDI, Product ID)
   • Drop failure mode target-derived causes (TWF, HDF, PWF, OSF, RNF)
   • One-hot encode Machine Type (Type_L, Type_M, Reference: Type_H)
@@ -22,7 +22,7 @@ Phase 1: Preprocessing & Leakage Elimination (notebooks/Phase_1_Data_Preprocessi
   • Verify class weights & 5-fold cross-validation consistency
        │
        ▼
-Phase 2: Model Training, Evaluation & Calibration (notebooks/Phase_2_Model_Training_Evaluation.ipynb - 112 cells)
+Phase 2: Model Training, Evaluation & Calibration (notebooks/Phase_2_Model_Training_Evaluation.ipynb - 113 cells)
   • 5-Fold Stratified Cross-Validation on training data across 5 baseline algorithms:
     Logistic Regression, Decision Tree, Random Forest, SVM (RBF), Baseline XGBoost
   • Hyperparameter tuning: RandomizedSearchCV (30 iterations, 5-fold CV)
