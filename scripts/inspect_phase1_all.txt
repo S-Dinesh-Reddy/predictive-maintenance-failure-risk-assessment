@@ -1,0 +1,384 @@
+=== Cell 00 [code] ===
+import pandas as pd
+import numpy as np
+
+
+=== Cell 01 [code] ===
+from google.colab import drive
+
+drive.mount('/content/drive')
+
+=== Cell 02 [code] ===
+df = pd.read_csv('/content/drive/MyDrive/Predictive_Maintenance/ai4i2020.csv')
+
+=== Cell 03 [code] ===
+df.head()
+
+=== Cell 04 [code] ===
+df.shape
+
+=== Cell 05 [code] ===
+df.info()
+
+=== Cell 06 [code] ===
+df.isnull().sum()
+
+=== Cell 07 [code] ===
+df.duplicated().sum()
+
+=== Cell 08 [code] ===
+df.columns
+
+=== Cell 09 [code] ===
+df['Type'].value_counts()
+
+=== Cell 10 [code] ===
+df['Product ID'].nunique()
+
+=== Cell 11 [code] ===
+df['Machine failure'].value_counts()
+
+=== Cell 12 [code] ===
+failure_modes = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+
+df[failure_modes].sum()
+
+=== Cell 13 [code] ===
+df_clean = df.copy()
+
+=== Cell 14 [code] ===
+df_clean = df_clean.drop(columns=[
+    'UDI',
+    'Product ID',
+    'TWF',
+    'HDF',
+    'PWF',
+    'OSF',
+    'RNF'
+])
+
+=== Cell 15 [code] ===
+df_clean.columns
+
+=== Cell 16 [code] ===
+df_clean = pd.get_dummies(
+    df_clean,
+    columns=['Type'],
+    drop_first=True,
+    dtype=int
+)
+
+=== Cell 17 [code] ===
+df_clean.head()
+
+=== Cell 18 [code] ===
+df_clean.columns
+
+=== Cell 19 [code] ===
+df_clean.dtypes
+
+=== Cell 20 [code] ===
+df_clean.describe()
+
+=== Cell 21 [code] ===
+df_clean['Machine failure'].value_counts(normalize=True) * 100
+
+=== Cell 22 [code] ===
+import matplotlib.pyplot as plt
+
+df_clean['Machine failure'].value_counts().plot(kind='bar')
+plt.xlabel('Machine Failure')
+plt.ylabel('Number of Samples')
+plt.title('Machine Failure Distribution')
+plt.show()
+
+=== Cell 23 [code] ===
+df_clean.groupby('Machine failure')[[
+    'Air temperature [K]',
+    'Process temperature [K]',
+    'Rotational speed [rpm]',
+    'Torque [Nm]',
+    'Tool wear [min]'
+]].mean()
+
+=== Cell 24 [code] ===
+import matplotlib.pyplot as plt
+
+features = [
+    'Air temperature [K]',
+    'Process temperature [K]',
+    'Rotational speed [rpm]',
+    'Torque [Nm]',
+    'Tool wear [min]'
+]
+
+for feature in features:
+    plt.figure(figsize=(7, 4))
+
+    df_clean[df_clean['Machine failure'] == 0][feature].plot(
+        kind='hist',
+        bins=30,
+        alpha=0.6,
+        label='No Failure'
+    )
+
+    df_clean[df_clean['Machine failure'] == 1][feature].plot(
+        kind='hist',
+        bins=30,
+        alpha=0.6,
+        label='Failure'
+    )
+
+    plt.xlabel(feature)
+    plt.ylabel('Frequency')
+    plt.title(f'{feature}: Failure vs No Failure')
+    plt.legend()
+    plt.show()
+
+=== Cell 25 [code] ===
+features = [
+    'Air temperature [K]',
+    'Process temperature [K]',
+    'Rotational speed [rpm]',
+    'Torque [Nm]',
+    'Tool wear [min]'
+]
+
+for feature in features:
+    plt.figure(figsize=(6, 4))
+
+    df_clean.boxplot(
+        column=feature,
+        by='Machine failure'
+    )
+
+    plt.title(f'{feature}: Failure vs No Failure')
+    plt.suptitle('')
+    plt.xlabel('Machine Failure')
+    plt.ylabel(feature)
+    plt.show()
+
+=== Cell 26 [code] ===
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+correlation = df_clean.corr()
+
+plt.figure(figsize=(10, 7))
+sns.heatmap(
+    correlation,
+    annot=True,
+    fmt='.2f',
+    cmap='coolwarm',
+    center=0
+)
+
+plt.title('Correlation Matrix')
+plt.show()
+
+=== Cell 27 [code] ===
+df_clean['Temperature difference [K]'] = (
+    df_clean['Process temperature [K]']
+    - df_clean['Air temperature [K]']
+)
+
+=== Cell 28 [code] ===
+df_clean[['Air temperature [K]',
+          'Process temperature [K]',
+          'Temperature difference [K]']].head()
+
+=== Cell 29 [code] ===
+df_clean['Tool wear [min]'].describe()
+
+=== Cell 30 [code] ===
+df_clean['Tool wear level'] = pd.qcut(
+    df_clean['Tool wear [min]'],
+    q=3,
+    labels=['Low', 'Medium', 'High']
+)
+
+=== Cell 31 [code] ===
+df_clean['Tool wear level'].value_counts()
+
+=== Cell 32 [code] ===
+df_clean[['Tool wear [min]', 'Tool wear level']].head(10)
+
+=== Cell 33 [code] ===
+df_clean.groupby('Tool wear level')['Machine failure'].agg(
+    ['count', 'sum', 'mean']
+)
+
+=== Cell 34 [code] ===
+df_clean['Tool wear level'] = df_clean['Tool wear level'].map({
+    'Low': 0,
+    'Medium': 1,
+    'High': 2
+})
+
+=== Cell 35 [code] ===
+df_clean['Tool wear level'].value_counts().sort_index()
+
+=== Cell 36 [code] ===
+df_clean.head()
+
+=== Cell 37 [code] ===
+df_clean.columns
+
+=== Cell 38 [code] ===
+df_clean.groupby(['Type_L', 'Type_M'])['Machine failure'].agg(
+    ['count', 'sum', 'mean']
+)
+
+=== Cell 39 [code] ===
+df_clean['Machine failure'].value_counts()
+
+=== Cell 40 [code] ===
+X = df_clean.drop(columns=['Machine failure'])
+y = df_clean['Machine failure']
+
+=== Cell 41 [code] ===
+print("Features shape:", X.shape)
+print("Target shape:", y.shape)
+
+=== Cell 42 [code] ===
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    stratify=y,
+    random_state=42
+)
+
+=== Cell 43 [code] ===
+print("Training set:", y_train.value_counts(normalize=True) * 100)
+print("Test set:", y_test.value_counts(normalize=True) * 100)
+
+=== Cell 44 [code] ===
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+=== Cell 45 [code] ===
+print("Training shape:", X_train_scaled.shape)
+print("Test shape:", X_test_scaled.shape)
+
+=== Cell 46 [code] ===
+from sklearn.utils.class_weight import compute_class_weight
+import numpy as np
+
+classes = np.unique(y_train)
+
+weights = compute_class_weight(
+    class_weight='balanced',
+    classes=classes,
+    y=y_train
+)
+
+class_weights = dict(zip(classes, weights))
+
+print("Class weights:", class_weights)
+
+=== Cell 47 [code] ===
+from sklearn.model_selection import StratifiedKFold
+
+skf = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=42
+)
+
+print("Number of folds:", skf.get_n_splits())
+
+=== Cell 48 [code] ===
+for fold, (train_idx, val_idx) in enumerate(skf.split(X_train_scaled, y_train), 1):
+    print(
+        f"Fold {fold}: "
+        f"Train failure rate = {y_train.iloc[train_idx].mean():.4f}, "
+        f"Validation failure rate = {y_train.iloc[val_idx].mean():.4f}"
+    )
+
+=== Cell 49 [code] ===
+# Final check before model training
+
+print("Final feature shape:", X_train_scaled.shape)
+print("Final target shape:", y_train.shape)
+
+print("\nTraining data:")
+print(X_train_scaled.shape)
+
+print("\nTest data:")
+print(X_test_scaled.shape)
+
+print("\nTarget distribution:")
+print(y_train.value_counts())
+
+=== Cell 50 [code] ===
+# Save processed datasets for the next ML phase
+
+pd.DataFrame(
+    X_train_scaled,
+    columns=X.columns
+).to_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/X_train_scaled.csv',
+    index=False
+)
+
+pd.DataFrame(
+    X_test_scaled,
+    columns=X.columns
+).to_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/X_test_scaled.csv',
+    index=False
+)
+
+y_train.to_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/y_train.csv',
+    index=False
+)
+
+y_test.to_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/y_test.csv',
+    index=False
+)
+
+print("Processed datasets saved successfully.")
+
+=== Cell 51 [markdown] ===
+# Phase 1 Complete — Data Preprocessing
+
+The AI4I 2020 dataset was loaded, inspected, cleaned, transformed, and prepared for machine learning.
+
+### Completed tasks
+
+- Dataset loading and initial inspection
+- Missing-value analysis
+- Duplicate-value analysis
+- Categorical feature encoding
+- Feature engineering
+- Exploratory data analysis
+- Class imbalance analysis
+- Train-test split
+- Feature scaling
+- Class-weight calculation
+- Stratified K-Fold validation check
+
+### Final dataset
+
+- Training samples: 8,000
+- Testing samples: 2,000
+- Features: 9
+- Target: Machine failure
+- Failure rate: approximately 3.39%
+
+### Output
+
+The processed training and testing datasets have been saved to Google Drive and are ready for the model-training phase.
+
+=== Cell 52 [code] ===
+
+

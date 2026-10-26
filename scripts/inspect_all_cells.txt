@@ -1,0 +1,1179 @@
+=== CELL 000 [code] ===
+First line: import pandas as pd
+Length lines: 1
+import pandas as pd
+
+=== CELL 001 [code] ===
+First line: from google.colab import drive
+Length lines: 2
+from google.colab import drive
+drive.mount('/content/drive')
+
+=== CELL 002 [code] ===
+First line: 
+Length lines: 16
+
+X_train = pd.read_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/X_train_scaled.csv'
+)
+
+X_test = pd.read_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/X_test_scaled.csv'
+)
+
+y_train = pd.read_csv(
+    '/content/drive/MyDrive/Predictive_Maintenance/y_train.csv'
+)
+
+y_test = pd.read_...
+
+=== CELL 003 [markdown] ===
+First line: ## 1. Class Distribution Analysis
+Length lines: 3
+## 1. Class Distribution Analysis
+
+The training data is highly imbalanced, with machine failures representing a small proportion of the observations. Visualizing the class distribution helps explain why imbalance-aware modelling is required.
+
+=== CELL 004 [code] ===
+First line: import matplotlib.pyplot as plt
+Length lines: 25
+import matplotlib.pyplot as plt
+
+class_counts = y_train.value_counts().sort_index()
+
+labels = ['No Failure', 'Failure']
+
+plt.figure(figsize=(7, 5))
+bars = plt.bar(labels, class_counts.values)
+
+plt.title('Training Set Class Distribution')
+plt.xlabel('Machine Failure')
+plt.ylabel('Number of Samples')
+...
+
+=== CELL 005 [code] ===
+First line: print("X_train shape:", X_train.shape)
+Length lines: 4
+print("X_train shape:", X_train.shape)
+print("X_test shape:", X_test.shape)
+print("y_train shape:", y_train.shape)
+print("y_test shape:", y_test.shape)
+
+=== CELL 006 [code] ===
+First line: y_train = y_train.squeeze()
+Length lines: 2
+y_train = y_train.squeeze()
+y_test = y_test.squeeze()
+
+=== CELL 007 [code] ===
+First line: print("y_train shape:", y_train.shape)
+Length lines: 2
+print("y_train shape:", y_train.shape)
+print("y_test shape:", y_test.shape)
+
+=== CELL 008 [markdown] ===
+First line: ## 2. Feature-Space Visualization using PCA
+Length lines: 5
+## 2. Feature-Space Visualization using PCA
+
+The dataset contains multiple features, which cannot be directly visualized in a single 2D plot. Principal Component Analysis (PCA) is used here only for visualization by reducing the feature space to two principal components.
+
+The points are colored acco...
+
+=== CELL 009 [code] ===
+First line: from sklearn.preprocessing import StandardScaler
+Length lines: 45
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import numpy as np
+
+y_train_array = np.asarray(y_train).reshape(-1)
+
+pca_scaler = StandardScaler()
+X_train_pca_scaled = pca_scaler.fit_transform(X_train)
+
+pca = PCA(n_components=2)
+...
+
+=== CELL 010 [code] ===
+First line: from sklearn.linear_model import LogisticRegression
+Length lines: 1
+from sklearn.linear_model import LogisticRegression
+
+=== CELL 011 [code] ===
+First line: logistic_model = LogisticRegression(
+Length lines: 5
+logistic_model = LogisticRegression(
+    class_weight='balanced',
+    random_state=42,
+    max_iter=1000
+)
+
+=== CELL 012 [code] ===
+First line: logistic_model.fit(X_train, y_train)
+Length lines: 1
+logistic_model.fit(X_train, y_train)
+
+=== CELL 013 [markdown] ===
+First line: ### Logistic Regression Coefficient Analysis
+Length lines: 3
+### Logistic Regression Coefficient Analysis
+
+The coefficients of the Logistic Regression model show the direction and relative contribution of each feature toward the predicted machine-failure class.
+
+=== CELL 014 [code] ===
+First line: import pandas as pd
+Length lines: 18
+import pandas as pd
+import matplotlib.pyplot as plt
+
+lr_coefficients = pd.Series(
+    logistic_model.coef_[0],
+    index=X_train.columns
+).sort_values()
+
+plt.figure(figsize=(9, 6))
+
+lr_coefficients.plot(kind='barh')
+
+plt.axvline(0, linewidth=1)
+plt.xlabel('Coefficient Value')
+plt.ylabel('Feature')
+p...
+
+=== CELL 015 [code] ===
+First line: y_pred = logistic_model.predict(X_test)
+Length lines: 1
+y_pred = logistic_model.predict(X_test)
+
+=== CELL 016 [code] ===
+First line: y_pred_proba = logistic_model.predict_proba(X_test)[:, 1]
+Length lines: 1
+y_pred_proba = logistic_model.predict_proba(X_test)[:, 1]
+
+=== CELL 017 [code] ===
+First line: print("First 10 predictions:")
+Length lines: 5
+print("First 10 predictions:")
+print(y_pred[:10])
+
+print("\nFirst 10 failure probabilities:")
+print(y_pred_proba[:10])
+
+=== CELL 018 [code] ===
+First line: from sklearn.metrics import (
+Length lines: 21
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score
+)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+roc_auc = roc_auc_scor...
+
+=== CELL 019 [code] ===
+First line: import matplotlib.pyplot as plt
+Length lines: 18
+import matplotlib.pyplot as plt
+
+lr_metrics = {
+    'Accuracy': 0.8345,
+    'Precision': 0.1549,
+    'Recall': 0.8676,
+    'F1-Score': 0.2628,
+    'ROC-AUC': 0.9139
+}
+
+plt.figure(figsize=(8, 5))
+plt.bar(lr_metrics.keys(), lr_metrics.values())
+plt.ylim(0, 1)
+plt.ylabel('Score')
+plt.title('Logistic Re...
+
+=== CELL 020 [code] ===
+First line: from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+Length lines: 15
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+cm = confusion_matrix(y_test, y_pred)
+
+print("Confusion Matrix:")
+print(cm)
+
+ConfusionMatrixDisplay(
+    confusion_matrix=cm,
+    display_labels=["No Failure", "Failure"]
+).plot()
+
+plt.title("Logist...
+
+=== CELL 021 [code] ===
+First line: from sklearn.model_selection import StratifiedKFold, cross_validate
+Length lines: 7
+from sklearn.model_selection import StratifiedKFold, cross_validate
+
+skf = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=42
+)
+
+=== CELL 022 [code] ===
+First line: scoring = {
+Length lines: 15
+scoring = {
+    'accuracy': 'accuracy',
+    'precision': 'precision',
+    'recall': 'recall',
+    'f1': 'f1',
+    'roc_auc': 'roc_auc'
+}
+
+cv_results = cross_validate(
+    logistic_model,
+    X_train,
+    y_train,
+    cv=skf,
+    scoring=scoring
+)
+
+=== CELL 023 [code] ===
+First line: print("Logistic Regression - 5-Fold Cross Validation")
+Length lines: 8
+print("Logistic Regression - 5-Fold Cross Validation")
+print("---------------------------------------------")
+
+print(f"Mean Accuracy : {cv_results['test_accuracy'].mean():.4f}")
+print(f"Mean Precision: {cv_results['test_precision'].mean():.4f}")
+print(f"Mean Recall   : {cv_results['test_recall'].mea...
+
+=== CELL 024 [code] ===
+First line: from sklearn.ensemble import RandomForestClassifier
+Length lines: 1
+from sklearn.ensemble import RandomForestClassifier
+
+=== CELL 025 [code] ===
+First line: rf_model = RandomForestClassifier(
+Length lines: 6
+rf_model = RandomForestClassifier(
+    n_estimators=200,
+    class_weight='balanced',
+    random_state=42,
+    n_jobs=-1
+)
+
+=== CELL 026 [code] ===
+First line: rf_model.fit(X_train, y_train)
+Length lines: 1
+rf_model.fit(X_train, y_train)
+
+=== CELL 027 [markdown] ===
+First line: ### Random Forest Feature Importance
+Length lines: 3
+### Random Forest Feature Importance
+
+Random Forest combines multiple decision trees. Feature importance shows the relative contribution of each feature to the decisions made across the ensemble.
+
+=== CELL 028 [code] ===
+First line: import pandas as pd
+Length lines: 19
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Extract Random Forest feature importance
+rf_importance = pd.Series(
+    rf_model.feature_importances_,
+    index=X_train.columns
+).sort_values()
+
+# Plot
+plt.figure(figsize=(9, 6))
+
+rf_importance.plot(kind='barh')
+
+plt.xlabel('Feature Importance'...
+
+=== CELL 029 [code] ===
+First line: y_pred_rf = rf_model.predict(X_test)
+Length lines: 2
+y_pred_rf = rf_model.predict(X_test)
+y_pred_proba_rf = rf_model.predict_proba(X_test)[:, 1]
+
+=== CELL 030 [code] ===
+First line: print("First 10 Random Forest predictions:")
+Length lines: 5
+print("First 10 Random Forest predictions:")
+print(y_pred_rf[:10])
+
+print("\nFirst 10 failure probabilities:")
+print(y_pred_proba_rf[:10])
+
+=== CELL 031 [code] ===
+First line: from sklearn.metrics import (
+Length lines: 21
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score
+)
+
+accuracy_rf = accuracy_score(y_test, y_pred_rf)
+precision_rf = precision_score(y_test, y_pred_rf)
+recall_rf = recall_score(y_test, y_pred_rf)
+f1_rf = f1_score(y_test, y_pred_rf...
+
+=== CELL 032 [code] ===
+First line: rf_metrics = {
+Length lines: 16
+rf_metrics = {
+    'Accuracy': 0.9880,
+    'Precision': 0.9583,
+    'Recall': 0.6765,
+    'F1-Score': 0.7931,
+    'ROC-AUC': 0.9705
+}
+
+plt.figure(figsize=(8, 5))
+plt.bar(rf_metrics.keys(), rf_metrics.values())
+plt.ylim(0, 1)
+plt.ylabel('Score')
+plt.title('Random Forest - Performance Metrics')
+plt.xt...
+
+=== CELL 033 [code] ===
+First line: from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+Length lines: 15
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+cm_rf = confusion_matrix(y_test, y_pred_rf)
+
+print("Random Forest Confusion Matrix:")
+print(cm_rf)
+
+ConfusionMatrixDisplay(
+    confusion_matrix=cm_rf,
+    display_labels=["No Failure", "Failure"]
+)...
+
+=== CELL 034 [code] ===
+First line: scoring = {
+Length lines: 16
+scoring = {
+    'accuracy': 'accuracy',
+    'precision': 'precision',
+    'recall': 'recall',
+    'f1': 'f1',
+    'roc_auc': 'roc_auc'
+}
+
+cv_results_rf = cross_validate(
+    rf_model,
+    X_train,
+    y_train,
+    cv=skf,
+    scoring=scoring,
+    n_jobs=-1
+)
+
+=== CELL 035 [code] ===
+First line: print("Random Forest - 5-Fold Cross Validation")
+Length lines: 8
+print("Random Forest - 5-Fold Cross Validation")
+print("---------------------------------------")
+
+print(f"Mean Accuracy : {cv_results_rf['test_accuracy'].mean():.4f}")
+print(f"Mean Precision: {cv_results_rf['test_precision'].mean():.4f}")
+print(f"Mean Recall   : {cv_results_rf['test_recall'].mean()...
+
+=== CELL 036 [code] ===
+First line: from sklearn.svm import SVC
+Length lines: 1
+from sklearn.svm import SVC
+
+=== CELL 037 [code] ===
+First line: svm_model = SVC(
+Length lines: 5
+svm_model = SVC(
+    class_weight='balanced',
+    probability=True,
+    random_state=42
+)
+
+=== CELL 038 [code] ===
+First line: svm_model.fit(X_train, y_train)
+Length lines: 1
+svm_model.fit(X_train, y_train)
+
+=== CELL 039 [markdown] ===
+First line: ### SVM Decision Boundary Visualization
+Length lines: 3
+### SVM Decision Boundary Visualization
+
+To visually understand how SVM separates the two classes, a separate SVM is trained on the two PCA components created earlier. This visualization is for interpretation only; the actual SVM model uses the complete feature set.
+
+=== CELL 040 [code] ===
+First line: from sklearn.svm import SVC
+Length lines: 81
+from sklearn.svm import SVC
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Select a representative subset for visualization only
+rng = np.random.RandomState(42)
+viz_indices = rng.choice(len(X_train_pca), size=1000, replace=False)
+
+X_viz = X_train_pca[viz_indices]
+y_viz = y_train_array[viz_ind...
+
+=== CELL 041 [code] ===
+First line: y_pred_svm = svm_model.predict(X_test)
+Length lines: 2
+y_pred_svm = svm_model.predict(X_test)
+y_pred_proba_svm = svm_model.predict_proba(X_test)[:, 1]
+
+=== CELL 042 [code] ===
+First line: print("First 10 SVM predictions:")
+Length lines: 5
+print("First 10 SVM predictions:")
+print(y_pred_svm[:10])
+
+print("\nFirst 10 failure probabilities:")
+print(y_pred_proba_svm[:10])
+
+=== CELL 043 [code] ===
+First line: accuracy_svm = accuracy_score(y_test, y_pred_svm)
+Length lines: 13
+accuracy_svm = accuracy_score(y_test, y_pred_svm)
+precision_svm = precision_score(y_test, y_pred_svm)
+recall_svm = recall_score(y_test, y_pred_svm)
+f1_svm = f1_score(y_test, y_pred_svm)
+roc_auc_svm = roc_auc_score(y_test, y_pred_proba_svm)
+
+print("SVM Performance")
+print("----------------")
+print(f"...
+
+=== CELL 044 [code] ===
+First line: svm_metrics = {
+Length lines: 16
+svm_metrics = {
+    'Accuracy': 0.9135,
+    'Precision': 0.2727,
+    'Recall': 0.9265,
+    'F1-Score': 0.4214,
+    'ROC-AUC': 0.9680
+}
+
+plt.figure(figsize=(8, 5))
+plt.bar(svm_metrics.keys(), svm_metrics.values())
+plt.ylim(0, 1)
+plt.ylabel('Score')
+plt.title('SVM - Performance Metrics')
+plt.xticks(ro...
+
+=== CELL 045 [code] ===
+First line: from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+Length lines: 15
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+cm_svm = confusion_matrix(y_test, y_pred_svm)
+
+print("SVM Confusion Matrix:")
+print(cm_svm)
+
+ConfusionMatrixDisplay(
+    confusion_matrix=cm_svm,
+    display_labels=["No Failure", "Failure"]
+).plot(...
+
+=== CELL 046 [code] ===
+First line: cv_results_svm = cross_validate(
+Length lines: 8
+cv_results_svm = cross_validate(
+    svm_model,
+    X_train,
+    y_train,
+    cv=skf,
+    scoring=scoring,
+    n_jobs=-1
+)
+
+=== CELL 047 [code] ===
+First line: print("SVM - 5-Fold Cross Validation")
+Length lines: 8
+print("SVM - 5-Fold Cross Validation")
+print("----------------------------")
+
+print(f"Mean Accuracy : {cv_results_svm['test_accuracy'].mean():.4f}")
+print(f"Mean Precision: {cv_results_svm['test_precision'].mean():.4f}")
+print(f"Mean Recall   : {cv_results_svm['test_recall'].mean():.4f}")
+print(f"Me...
+
+=== CELL 048 [code] ===
+First line: from sklearn.tree import DecisionTreeClassifier
+Length lines: 1
+from sklearn.tree import DecisionTreeClassifier
+
+=== CELL 049 [code] ===
+First line: dt_model = DecisionTreeClassifier(
+Length lines: 4
+dt_model = DecisionTreeClassifier(
+    class_weight='balanced',
+    random_state=42
+)
+
+=== CELL 050 [code] ===
+First line: dt_model.fit(X_train, y_train)
+Length lines: 1
+dt_model.fit(X_train, y_train)
+
+=== CELL 051 [markdown] ===
+First line: ### Decision Tree Visualization
+Length lines: 3
+### Decision Tree Visualization
+
+The Decision Tree is visualized to show how the model makes failure predictions through hierarchical feature-based decisions.
+
+=== CELL 052 [code] ===
+First line: from sklearn.tree import plot_tree
+Length lines: 17
+from sklearn.tree import plot_tree
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(20, 10))
+
+plot_tree(
+    dt_model,
+    feature_names=X_train.columns,
+    class_names=['No Failure', 'Failure'],
+    filled=True,
+    rounded=True,
+    max_depth=3,
+    fontsize=9
+)
+
+plt.title('Decision Tree Visu...
+
+=== CELL 053 [code] ===
+First line: y_pred_dt = dt_model.predict(X_test)
+Length lines: 2
+y_pred_dt = dt_model.predict(X_test)
+y_pred_proba_dt = dt_model.predict_proba(X_test)[:, 1]
+
+=== CELL 054 [code] ===
+First line: print("First 10 Decision Tree predictions:")
+Length lines: 5
+print("First 10 Decision Tree predictions:")
+print(y_pred_dt[:10])
+
+print("\nFirst 10 failure probabilities:")
+print(y_pred_proba_dt[:10])
+
+=== CELL 055 [code] ===
+First line: accuracy_dt = accuracy_score(y_test, y_pred_dt)
+Length lines: 13
+accuracy_dt = accuracy_score(y_test, y_pred_dt)
+precision_dt = precision_score(y_test, y_pred_dt)
+recall_dt = recall_score(y_test, y_pred_dt)
+f1_dt = f1_score(y_test, y_pred_dt)
+roc_auc_dt = roc_auc_score(y_test, y_pred_proba_dt)
+
+print("Decision Tree Performance")
+print("-------------------------")...
+
+=== CELL 056 [code] ===
+First line: dt_metrics = {
+Length lines: 16
+dt_metrics = {
+    'Accuracy': 0.9770,
+    'Precision': 0.6719,
+    'Recall': 0.6324,
+    'F1-Score': 0.6515,
+    'ROC-AUC': 0.8107
+}
+
+plt.figure(figsize=(8, 5))
+plt.bar(dt_metrics.keys(), dt_metrics.values())
+plt.ylim(0, 1)
+plt.ylabel('Score')
+plt.title('Decision Tree - Performance Metrics')
+plt.xt...
+
+=== CELL 057 [code] ===
+First line: cm_dt = confusion_matrix(y_test, y_pred_dt)
+Length lines: 12
+cm_dt = confusion_matrix(y_test, y_pred_dt)
+
+print("Decision Tree Confusion Matrix:")
+print(cm_dt)
+
+ConfusionMatrixDisplay(
+    confusion_matrix=cm_dt,
+    display_labels=["No Failure", "Failure"]
+).plot()
+
+plt.title("Decision Tree - Confusion Matrix")
+plt.show()
+
+=== CELL 058 [code] ===
+First line: cv_results_dt = cross_validate(
+Length lines: 8
+cv_results_dt = cross_validate(
+    dt_model,
+    X_train,
+    y_train,
+    cv=skf,
+    scoring=scoring,
+    n_jobs=-1
+)
+
+=== CELL 059 [code] ===
+First line: print("Decision Tree - 5-Fold Cross Validation")
+Length lines: 8
+print("Decision Tree - 5-Fold Cross Validation")
+print("---------------------------------------")
+
+print(f"Mean Accuracy : {cv_results_dt['test_accuracy'].mean():.4f}")
+print(f"Mean Precision: {cv_results_dt['test_precision'].mean():.4f}")
+print(f"Mean Recall   : {cv_results_dt['test_recall'].mean()...
+
+=== CELL 060 [code] ===
+First line: class_counts = y_train.value_counts()
+Length lines: 7
+class_counts = y_train.value_counts()
+
+scale_pos_weight = class_counts[0] / class_counts[1]
+
+print("Class 0 count:", class_counts[0])
+print("Class 1 count:", class_counts[1])
+print("Scale Pos Weight:", scale_pos_weight)
+
+=== CELL 061 [code] ===
+First line: from xgboost import XGBClassifier
+Length lines: 1
+from xgboost import XGBClassifier
+
+=== CELL 062 [code] ===
+First line: xgb_model = XGBClassifier(
+Length lines: 8
+xgb_model = XGBClassifier(
+    n_estimators=200,
+    learning_rate=0.05,
+    max_depth=5,
+    scale_pos_weight=scale_pos_weight,
+    random_state=42,
+    eval_metric='logloss'
+)
+
+=== CELL 063 [code] ===
+First line: X_train_xgb = X_train.copy()
+Length lines: 16
+X_train_xgb = X_train.copy()
+X_test_xgb = X_test.copy()
+
+X_train_xgb.columns = [
+    'Air_temperature',
+    'Process_temperature',
+    'Rotational_speed',
+    'Torque',
+    'Tool_wear',
+    'Type_L',
+    'Type_M',
+    'Temperature_difference',
+    'Tool_wear_level'
+]
+
+X_test_xgb.columns = X_train_xg...
+
+=== CELL 064 [code] ===
+First line: xgb_model.fit(X_train_xgb, y_train)
+Length lines: 1
+xgb_model.fit(X_train_xgb, y_train)
+
+=== CELL 065 [code] ===
+First line: y_pred_xgb = xgb_model.predict(X_test_xgb)
+Length lines: 2
+y_pred_xgb = xgb_model.predict(X_test_xgb)
+y_pred_proba_xgb = xgb_model.predict_proba(X_test_xgb)[:, 1]
+
+=== CELL 066 [code] ===
+First line: print("First 10 XGBoost predictions:")
+Length lines: 5
+print("First 10 XGBoost predictions:")
+print(y_pred_xgb[:10])
+
+print("\nFirst 10 failure probabilities:")
+print(y_pred_proba_xgb[:10])
+
+=== CELL 067 [code] ===
+First line: accuracy_xgb = accuracy_score(y_test, y_pred_xgb)
+Length lines: 13
+accuracy_xgb = accuracy_score(y_test, y_pred_xgb)
+precision_xgb = precision_score(y_test, y_pred_xgb)
+recall_xgb = recall_score(y_test, y_pred_xgb)
+f1_xgb = f1_score(y_test, y_pred_xgb)
+roc_auc_xgb = roc_auc_score(y_test, y_pred_proba_xgb)
+
+print("XGBoost Performance")
+print("-------------------")
+p...
+
+=== CELL 068 [code] ===
+First line: xgb_metrics = {
+Length lines: 16
+xgb_metrics = {
+    'Accuracy': 0.9710,
+    'Precision': 0.5481,
+    'Recall': 0.8382,
+    'F1-Score': 0.6628,
+    'ROC-AUC': 0.9758
+}
+
+plt.figure(figsize=(8, 5))
+plt.bar(xgb_metrics.keys(), xgb_metrics.values())
+plt.ylim(0, 1)
+plt.ylabel('Score')
+plt.title('XGBoost - Performance Metrics')
+plt.xtick...
+
+=== CELL 069 [code] ===
+First line: cm_xgb = confusion_matrix(y_test, y_pred_xgb)
+Length lines: 12
+cm_xgb = confusion_matrix(y_test, y_pred_xgb)
+
+print("XGBoost Confusion Matrix:")
+print(cm_xgb)
+
+ConfusionMatrixDisplay(
+    confusion_matrix=cm_xgb,
+    display_labels=["No Failure", "Failure"]
+).plot()
+
+plt.title("XGBoost - Confusion Matrix")
+plt.show()
+
+=== CELL 070 [code] ===
+First line: cv_results_xgb = cross_validate(
+Length lines: 8
+cv_results_xgb = cross_validate(
+    xgb_model,
+    X_train_xgb,
+    y_train,
+    cv=skf,
+    scoring=scoring,
+    n_jobs=-1
+)
+
+=== CELL 071 [code] ===
+First line: print("XGBoost - 5-Fold Cross Validation")
+Length lines: 8
+print("XGBoost - 5-Fold Cross Validation")
+print("--------------------------------")
+
+print(f"Mean Accuracy : {cv_results_xgb['test_accuracy'].mean():.4f}")
+print(f"Mean Precision: {cv_results_xgb['test_precision'].mean():.4f}")
+print(f"Mean Recall   : {cv_results_xgb['test_recall'].mean():.4f}")
+pr...
+
+=== CELL 072 [code] ===
+First line: comparison = pd.DataFrame({
+Length lines: 90
+comparison = pd.DataFrame({
+    'Model': [
+        'Logistic Regression',
+        'Decision Tree',
+        'Random Forest',
+        'SVM',
+        'XGBoost'
+    ],
+
+    'Test Accuracy': [
+        accuracy,
+        accuracy_dt,
+        accuracy_rf,
+        accuracy_svm,
+        accuracy_xgb
+    ],
+
+ ...
+
+=== CELL 073 [code] ===
+First line: comparison.round(4)
+Length lines: 1
+comparison.round(4)
+
+=== CELL 074 [code] ===
+First line: import matplotlib.pyplot as plt
+Length lines: 28
+import matplotlib.pyplot as plt
+
+# Five evaluation metrics
+metrics = [
+    'Test Accuracy',
+    'Test Precision',
+    'Test Recall',
+    'Test F1 Score',
+    'Test ROC-AUC'
+]
+
+# Select metrics for plotting
+comparison_plot = comparison.set_index('Model')[metrics]
+
+# Create grouped bar chart
+ax = comp...
+
+=== CELL 075 [markdown] ===
+First line: ## ROC Curve Comparison
+Length lines: 3
+## ROC Curve Comparison
+
+ROC curves are used to visualize the ability of the five baseline models to distinguish between machine failure and no failure across different classification thresholds.
+
+=== CELL 076 [code] ===
+First line: from sklearn.metrics import roc_curve
+Length lines: 53
+from sklearn.metrics import roc_curve
+import matplotlib.pyplot as plt
+
+# Calculate ROC curves
+fpr_lr, tpr_lr, _ = roc_curve(y_test, y_pred_proba)
+fpr_dt, tpr_dt, _ = roc_curve(y_test, y_pred_proba_dt)
+fpr_rf, tpr_rf, _ = roc_curve(y_test, y_pred_proba_rf)
+fpr_svm, tpr_svm, _ = roc_curve(y_test, y_pr...
+
+=== CELL 077 [code] ===
+First line: from sklearn.model_selection import RandomizedSearchCV
+Length lines: 1
+from sklearn.model_selection import RandomizedSearchCV
+
+=== CELL 078 [code] ===
+First line: from scipy.stats import randint, uniform
+Length lines: 1
+from scipy.stats import randint, uniform
+
+=== CELL 079 [code] ===
+First line: param_dist = {
+Length lines: 8
+param_dist = {
+    'n_estimators': randint(100, 500),
+    'max_depth': randint(3, 8),
+    'learning_rate': uniform(0.01, 0.19),
+    'subsample': uniform(0.7, 0.3),
+    'colsample_bytree': uniform(0.7, 0.3),
+    'min_child_weight': randint(1, 8)
+}
+
+=== CELL 080 [code] ===
+First line: xgb_random_search = RandomizedSearchCV(
+Length lines: 10
+xgb_random_search = RandomizedSearchCV(
+    estimator=xgb_model,
+    param_distributions=param_dist,
+    n_iter=30,
+    scoring='f1',
+    cv=skf,
+    random_state=42,
+    n_jobs=-1,
+    verbose=1
+)
+
+=== CELL 081 [code] ===
+First line: xgb_random_search.fit(X_train_xgb, y_train)
+Length lines: 1
+xgb_random_search.fit(X_train_xgb, y_train)
+
+=== CELL 082 [code] ===
+First line: print("Best Parameters:")
+Length lines: 5
+print("Best Parameters:")
+print(xgb_random_search.best_params_)
+
+print("\nBest CV F1 Score:")
+print(xgb_random_search.best_score_)
+
+=== CELL 083 [markdown] ===
+First line: ## XGBoost Hyperparameter Tuning Results
+Length lines: 3
+## XGBoost Hyperparameter Tuning Results
+
+The randomized search evaluated 30 hyperparameter combinations using 5-fold stratified cross-validation. F1-score was used as the optimization metric because the failure class is highly imbalanced.
+
+=== CELL 084 [code] ===
+First line: import matplotlib.pyplot as plt
+Length lines: 31
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Extract CV results from RandomizedSearchCV
+cv_results = pd.DataFrame(xgb_random_search.cv_results_)
+
+# Sort by mean CV F1 score
+cv_results = cv_results.sort_values('mean_test_score', ascending=False)
+
+# Plot all 30 tested combinations
+plt.figure(...
+
+=== CELL 085 [code] ===
+First line: best_xgb_model = xgb_random_search.best_estimator_
+Length lines: 1
+best_xgb_model = xgb_random_search.best_estimator_
+
+=== CELL 086 [code] ===
+First line: print(best_xgb_model)
+Length lines: 1
+print(best_xgb_model)
+
+=== CELL 087 [code] ===
+First line: y_pred_tuned_xgb = best_xgb_model.predict(X_test_xgb)
+Length lines: 2
+y_pred_tuned_xgb = best_xgb_model.predict(X_test_xgb)
+y_pred_proba_tuned_xgb = best_xgb_model.predict_proba(X_test_xgb)[:, 1]
+
+=== CELL 088 [code] ===
+First line: print("First 10 tuned XGBoost predictions:")
+Length lines: 5
+print("First 10 tuned XGBoost predictions:")
+print(y_pred_tuned_xgb[:10])
+
+print("\nFirst 10 failure probabilities:")
+print(y_pred_proba_tuned_xgb[:10])
+
+=== CELL 089 [code] ===
+First line: accuracy_tuned_xgb = accuracy_score(y_test, y_pred_tuned_xgb)
+Length lines: 13
+accuracy_tuned_xgb = accuracy_score(y_test, y_pred_tuned_xgb)
+precision_tuned_xgb = precision_score(y_test, y_pred_tuned_xgb)
+recall_tuned_xgb = recall_score(y_test, y_pred_tuned_xgb)
+f1_tuned_xgb = f1_score(y_test, y_pred_tuned_xgb)
+roc_auc_tuned_xgb = roc_auc_score(y_test, y_pred_proba_tuned_xgb)
+...
+
+=== CELL 090 [code] ===
+First line: cm_tuned_xgb = confusion_matrix(y_test, y_pred_tuned_xgb)
+Length lines: 12
+cm_tuned_xgb = confusion_matrix(y_test, y_pred_tuned_xgb)
+
+print("Tuned XGBoost Confusion Matrix:")
+print(cm_tuned_xgb)
+
+ConfusionMatrixDisplay(
+    confusion_matrix=cm_tuned_xgb,
+    display_labels=["No Failure", "Failure"]
+).plot()
+
+plt.title("Tuned XGBoost - Confusion Matrix")
+plt.show()
+
+=== CELL 091 [code] ===
+First line: cv_results_tuned_xgb = cross_validate(
+Length lines: 8
+cv_results_tuned_xgb = cross_validate(
+    best_xgb_model,
+    X_train_xgb,
+    y_train,
+    cv=skf,
+    scoring=scoring,
+    n_jobs=-1
+)
+
+=== CELL 092 [code] ===
+First line: print("Tuned XGBoost - 5-Fold Cross Validation")
+Length lines: 8
+print("Tuned XGBoost - 5-Fold Cross Validation")
+print("---------------------------------------")
+
+print(f"Mean Accuracy : {cv_results_tuned_xgb['test_accuracy'].mean():.4f}")
+print(f"Mean Precision: {cv_results_tuned_xgb['test_precision'].mean():.4f}")
+print(f"Mean Recall   : {cv_results_tuned_xgb[...
+
+=== CELL 093 [code] ===
+First line: tuned_xgb_row = pd.DataFrame({
+Length lines: 22
+tuned_xgb_row = pd.DataFrame({
+    'Model': ['XGBoost (Tuned)'],
+
+    'Test Accuracy': [accuracy_tuned_xgb],
+    'Test Precision': [precision_tuned_xgb],
+    'Test Recall': [recall_tuned_xgb],
+    'Test F1 Score': [f1_tuned_xgb],
+    'Test ROC-AUC': [roc_auc_tuned_xgb],
+
+    'CV Accuracy': [cv_resul...
+
+=== CELL 094 [code] ===
+First line: print([name for name in globals() if 'scal' in name.lower()])
+Length lines: 1
+print([name for name in globals() if 'scal' in name.lower()])
+
+=== CELL 095 [code] ===
+First line: print("X_train type:", type(X_train))
+Length lines: 4
+print("X_train type:", type(X_train))
+print("X_train shape:", X_train.shape)
+print("\nFirst 5 rows of X_train:")
+display(X_train.head())
+
+=== CELL 096 [code] ===
+First line: from sklearn.preprocessing import StandardScaler
+Length lines: 5
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+scaler.fit(X_train)
+
+=== CELL 097 [code] ===
+First line: print("Scaler recreated successfully.")
+Length lines: 2
+print("Scaler recreated successfully.")
+print("Number of features:", len(scaler.mean_))
+
+=== CELL 098 [code] ===
+First line: import os
+Length lines: 20
+import os
+import joblib
+
+models_path = "/content/drive/MyDrive/Predictive_Maintenance/models"
+
+os.makedirs(models_path, exist_ok=True)
+
+# Save the final tuned XGBoost model
+joblib.dump(
+    best_xgb_model,
+    f"{models_path}/tuned_xgboost_model.pkl"
+)
+
+# Save the scaler
+joblib.dump(
+    scaler,
+   ...
+
+=== CELL 099 [code] ===
+First line: import joblib
+Length lines: 14
+import joblib
+
+models_path = "/content/drive/MyDrive/Predictive_Maintenance/models"
+
+loaded_model = joblib.load(
+    f"{models_path}/tuned_xgboost_model.pkl"
+)
+
+loaded_scaler = joblib.load(
+    f"{models_path}/scaler.pkl"
+)
+
+print("Model loaded successfully:", type(loaded_model).__name__)
+print("Sca...
+
+=== CELL 100 [code] ===
+First line: loaded_predictions = loaded_model.predict(X_test_xgb)
+Length lines: 4
+loaded_predictions = loaded_model.predict(X_test_xgb)
+
+print("Predictions identical:",
+      (loaded_predictions == y_pred_tuned_xgb).all())
+
+=== CELL 101 [code] ===
+First line: import pandas as pd
+Length lines: 175
+import pandas as pd
+import numpy as np
+import joblib
+import xgboost as xgb
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix
+)
+
+base_path = "/content/dri...
+
+=== CELL 102 [markdown] ===
+First line: ## Baseline XGBoost vs Tuned XGBoost
+Length lines: 3
+## Baseline XGBoost vs Tuned XGBoost
+
+This comparison visualizes the improvement obtained by hyperparameter tuning across the five evaluation metrics.
+
+=== CELL 103 [code] ===
+First line: import matplotlib.pyplot as plt
+Length lines: 26
+import matplotlib.pyplot as plt
+import numpy as np
+
+metrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC-AUC']
+
+baseline = [0.9710, 0.5481, 0.8382, 0.6628, 0.9758]
+tuned = [0.9870, 0.8000, 0.8235, 0.8116, 0.9717]
+
+x = np.arange(len(metrics))
+width = 0.35
+
+plt.figure(figsize=(11, 6))
+
+plt.b...
+
+=== CELL 104 [markdown] ===
+First line: ## Final Tuned XGBoost Feature Importance
+Length lines: 3
+## Final Tuned XGBoost Feature Importance
+
+Feature importance from the final tuned XGBoost model shows which input features contributed most to the model's tree-based decisions.
+
+=== CELL 105 [code] ===
+First line: import pandas as pd
+Length lines: 19
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Feature importance from final tuned XGBoost
+xgb_importance = pd.Series(
+    final_xgb_model.feature_importances_,
+    index=X_train_xgb.columns
+).sort_values()
+
+plt.figure(figsize=(10, 6))
+
+xgb_importance.plot(kind='barh')
+
+plt.xlabel('Feature I...
+
+=== CELL 106 [markdown] ===
+First line: ---
+Length lines: 16
+---
+
+# END OF PHASE 2 — MODEL TRAINING & EVALUATION
+
+### Phase 2 Completed ✓
+
+- Five classification models trained
+- Performance evaluated using Accuracy, Precision, Recall, F1-Score and ROC-AUC
+- Models compared using test-set performance
+- XGBoost hyperparameter tuning completed
+- Final tuned XGBo...
+
+=== CELL 107 [code] ===
+First line: 
+Length lines: 0
+
+
