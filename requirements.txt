@@ -10,3 +10,4 @@ shap>=0.45.0
 nbformat>=5.9.0
 ipykernel>=6.29.0
 nbconvert>=7.16.0
+gunicorn>=23.0.0
