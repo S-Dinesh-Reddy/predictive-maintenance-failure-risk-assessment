@@ -1,175 +1,233 @@
 # Machine Learning-Based Predictive Maintenance and Failure Risk Assessment
 
-A complete, reproducible, end-to-end machine learning system for predicting machine failure risk from industrial equipment operating conditions using the **AI4I 2020 Predictive Maintenance Dataset**.
+An end-to-end machine learning project for predicting industrial equipment failure risk using operating-condition data from the **AI4I 2020 Predictive Maintenance Dataset**.
 
-The project implements a leakage-safe pipeline across data preprocessing, 5-fold cross-validation, model comparison across 5 baseline architectures + tuned XGBoost, probability calibration diagnostics, training-only threshold optimization, SHAP explainability, and deployment via an industrial Flask web application.
+This project implements a leakage-safe machine learning workflow, compares multiple classification models, uses SHAP for explainability, and deploys a Flask-based predictive maintenance dashboard.
 
----
+## 🚀 Live Demo
+
+- **Live Dashboard:** [https://predictive-maintenance-failure-risk.onrender.com](https://predictive-maintenance-failure-risk.onrender.com)
+- **GitHub Repository:** [predictive-maintenance-failure-risk-assessment](https://github.com/S-Dinesh-Reddy/predictive-maintenance-failure-risk-assessment)
+
+> The application is hosted on Render's free tier. It may take a short time to start after a period of inactivity.
 
 ## 📌 Project Architecture & Workflow
 
-```text
-AI4I 2020 Dataset (10,000 records)
-       │
-       ▼
-Phase 1: Preprocessing & Leakage Elimination (notebooks/Phase_1_Data_Preprocessing.ipynb - 66 cells)
-  • Remove identifier columns (UDI, Product ID)
-  • Drop failure mode target-derived causes (TWF, HDF, PWF, OSF, RNF)
-  • One-hot encode Machine Type (Type_L, Type_M, Reference: Type_H)
-  • Engineer domain features: Temperature difference (ΔT) & Tool wear level
-  • Stratified 80/20 train/test split (Seed 42)
-  • Fit StandardScaler on training data only (8,000 samples)
-  • Verify class weights & 5-fold cross-validation consistency
-       │
-       ▼
-Phase 2: Model Training, Evaluation & Calibration (notebooks/Phase_2_Model_Training_Evaluation.ipynb - 113 cells)
-  • 5-Fold Stratified Cross-Validation on training data across 5 baseline algorithms:
-    Logistic Regression, Decision Tree, Random Forest, SVM (RBF), Baseline XGBoost
-  • Hyperparameter tuning: RandomizedSearchCV (30 iterations, 5-fold CV)
-  • Training-Only Model Selection: Winner selected prior to test evaluation based on CV F1
-  • Training-Only Threshold Optimization: Out-Of-Fold (OOF) probabilities from Tuned XGBoost
-  • Final unbiased evaluation on held-out test partition (2,000 samples at 0.50 threshold)
-  • Probability calibration diagnostics & Brier score / Log Loss error analysis
-  • SHAP explainability (Global beeswarm, importance ranking, local waterfall case study, dependence)
-       │
-       ▼
-Phase 3: Production Export & Deployment
-  • Export leak-free production inference pipeline (`models/final_pipeline.pkl`)
-  • Verified true scaler (`models/scaler.pkl`) and tuned model (`models/tuned_xgboost_model.pkl`)
-  • Production metadata (`models/model_metadata.json`)
-  • Industrial Flask dashboard (`app.py`, `templates/index.html`, `static/`)
-  • Real-time two-level validation, risk tiering, telemetry logging, and SHAP visual diagnostics
-```
+The project is organized into three major phases:
 
----
+### Phase 1: Data Preprocessing
+
+- Removes identifier columns such as `UDI` and `Product ID`.
+- Eliminates target-derived failure-mode columns to prevent data leakage.
+- Encodes machine type using one-hot encoding.
+- Engineers domain features:
+  - Temperature difference
+  - Tool wear level
+- Performs a stratified 80/20 train-test split.
+- Fits the `StandardScaler` using training data only.
+
+### Phase 2: Model Training & Evaluation
+
+Five baseline algorithms are evaluated:
+
+- Logistic Regression
+- Decision Tree
+- Random Forest
+- Support Vector Machine (RBF)
+- Baseline XGBoost
+
+The workflow includes:
+
+- Stratified 5-fold cross-validation
+- Hyperparameter tuning using `RandomizedSearchCV`
+- Training-only model selection
+- Out-of-fold threshold analysis
+- Final evaluation on an untouched test set
+- Probability calibration diagnostics
+- SHAP-based model explainability
+
+### Phase 3: Production Export & Deployment
+
+- Exports the final inference pipeline and model artifacts.
+- Deploys a Flask web dashboard.
+- Provides prediction API endpoints.
+- Includes input validation and training-distribution warnings.
+- Displays machine failure probability and risk categories.
+- Integrates SHAP-based diagnostic insights.
 
 ## 📊 Dataset & Feature Schema
 
-- **Dataset**: AI4I 2020 Predictive Maintenance Dataset (UCI Machine Learning Repository / Synthetic Milling Telemetry)
-- **Total Records**: 10,000 samples
-- **Target Variable**: `Machine failure` (Binary: 0 = Normal, 1 = Failure)
-- **Natural Class Distribution**:
-  - Training Partition (8,000 samples): 7,729 Normal (96.61%), 271 Failures (3.39%)
-  - Held-out Test Partition (2,000 samples): 1,932 Normal (96.60%), 68 Failures (3.40%)
-  - Imbalance Ratio (`scale_pos_weight`): **28.52**
+- **Dataset:** AI4I 2020 Predictive Maintenance Dataset
+- **Source:** UCI Machine Learning Repository
+- **Total Records:** 10,000
+- **Target Variable:** `Machine failure`
+- **Task:** Binary classification
+- **Failure Rate:** Approximately 3.4%
 
-### Features Used by Models & Pipeline (9 Total):
-1. `Air_temperature`: Air temperature around the equipment [K]
-2. `Process_temperature`: Process operating temperature [K]
-3. `Rotational_speed`: Spindle rotational speed [rpm]
-4. `Torque`: Spindle torque generated [Nm]
-5. `Tool_wear`: Continuous tool cutting contact duration [min]
-6. `Type_L`: Low-quality variant indicator (One-hot)
-7. `Type_M`: Medium-quality variant indicator (One-hot)
-8. `Temperature_difference`: Engineered thermal gradient: `Process_temperature − Air_temperature` [K]
-9. `Tool_wear_level`: Engineered tool lifecycle stage (0 = Low ≤71 min, 1 = Medium 72–144 min, 2 = High >144 min)
+### Features Used
 
----
+The model uses nine features:
 
-## 🏆 Model Evaluation & Final Leaderboard
+| Feature | Description |
+|---|---|
+| `Air_temperature` | Air temperature around the equipment |
+| `Process_temperature` | Operating process temperature |
+| `Rotational_speed` | Spindle rotational speed |
+| `Torque` | Spindle torque |
+| `Tool_wear` | Tool wear duration |
+| `Type_L` | Low-quality machine variant indicator |
+| `Type_M` | Medium-quality machine variant indicator |
+| `Temperature_difference` | Process temperature minus air temperature |
+| `Tool_wear_level` | Categorized tool lifecycle stage |
 
-All models were evaluated using Stratified 5-Fold Cross-Validation on the training partition ($N=8,000$), followed by unbiased evaluation on the untouched held-out test set ($N=2,000$, 68 failures) at the documented operational decision threshold (0.50).
+## 🏆 Model Evaluation
 
-### Final Benchmark Leaderboard:
+Tuned XGBoost was selected based on training-only cross-validation and evaluated on the held-out test set using the documented operational threshold of **0.50**.
 
-| Model Architecture | Test F1-Score | Test Recall | Test Precision | Test ROC-AUC | Test AP | Brier Score | Log Loss | FN (Missed) | FP (Alarms) | CV F1 (Mean ± Std) | CV Recall (Mean ± Std) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Tuned XGBoost** (Selected) | **80.58%** | **82.35%** | **78.87%** | **97.58%** | **86.01%** | **0.0117** | **0.0531** | **12** | **15** | **77.83% ± 2.76%** | **77.14% ± 4.37%** |
-| **Random Forest** | 72.15% | 83.82% | 63.33% | 97.90% | 83.93% | 0.0187 | 0.0655 | 11 | 33 | 68.76% ± 4.24% | 75.64% ± 2.18% |
-| **Baseline XGBoost** | 66.29% | 85.29% | 54.21% | 97.63% | 84.50% | 0.0205 | 0.0883 | 10 | 49 | 69.31% ± 5.07% | 80.07% ± 5.56% |
-| **SVM (RBF Kernel)** | 55.56% | 44.12% | 75.00% | 96.78% | 65.93% | 0.0184 | 0.0961 | 38 | 10 | 49.73% ± 9.29% | 37.30% ± 9.42% |
-| **Decision Tree** | 51.16% | 80.88% | 37.41% | 84.32% | 71.51% | 0.0399 | 0.8288 | 13 | 92 | 50.27% ± 2.04% | 80.83% ± 7.22% |
-| **Logistic Regression** | 26.28% | 86.76% | 15.49% | 91.39% | 40.48% | 0.1199 | 0.3774 | 9 | 322 | 24.33% ± 1.21% | 81.93% ± 6.11% |
+### Final Test Results
 
-*Note: For binary classification probabilities, $\text{MSE} \equiv \text{Brier Score} = \frac{1}{N} \sum_{i=1}^N (y_i - p_i)^2 = 0.0117$ for Tuned XGBoost.*
+| Metric | Tuned XGBoost |
+|---|---:|
+| F1-Score | 80.58% |
+| Recall | 82.35% |
+| Precision | 78.87% |
+| ROC-AUC | 97.58% |
+| Average Precision (AP) | 86.01% |
+| Brier Score | 0.0117 |
+| Log Loss | 0.0531 |
+| False Negatives | 12 |
+| False Positives | 15 |
 
-### Methodological Insights & Decision Rationale:
-1. **Model Selection Independence**:
-   - Model selection was finalized **strictly on training-only 5-fold cross-validation** before unsealing the held-out test set.
-   - Tuned XGBoost achieved the highest training cross-validation F1 score (**0.7783 ± 0.0276**) and the most balanced recall/precision trade-off.
-2. **Threshold Optimization & Asymmetric Risk Trade-off (Zero Test Leakage)**:
-   - Out-of-fold (OOF) probability predictions were generated specifically from the tuned model architecture on training folds.
-   - An empirical sweep across $[0.10, 0.90]$ revealed that threshold 0.65 yields a slightly higher out-of-fold F1 (0.7656 vs. 0.7541 at 0.50).
-   - However, shifting from 0.50 to 0.65 reduces Recall from 76.38% to 72.32% (false negatives rise from 64 to 75 missed failures).
-   - In industrial machining operations, an undetected machine failure causes catastrophic cutter breakage, spindle destruction, and unplanned downtime ($C_{\text{FN}} \gg C_{\text{FP}}$).
-   - Operational threshold **0.50** is therefore chosen to prioritize higher failure capture (76.38% OOF recall; 82.35% held-out test recall) while preserving 74.46% OOF precision (78.87% test precision), rather than strictly maximizing the mathematical F1 score.
-3. **Probability Calibration Nuance**:
-   - Low Brier score alone does not establish calibration in imbalanced domains (~3.4% failures), because predicting $\hat{p} = 0.034$ everywhere yields Brier $\approx 0.033$.
-   - Combining Brier score with Log Loss (0.0531) and Platt sigmoid calibration curve analysis proves genuine probabilistic fidelity.
-4. **Dataset Scope & Industrial Deployment Limitations**:
-   - The AI4I 2020 dataset is a synthetic benchmark reflecting mathematical tool degradation and thermal equations, but does not capture real-world factory noise, ambient temperature swings, or machine vibration drift.
-   - Predictions serve as decision support and require plant-specific recalibration before autonomous shutdown deployment.
+The test partition contains 2,000 samples, including 68 failure cases.
 
----
+### Model Selection Approach
+
+Model selection was performed using training-only 5-fold cross-validation before evaluating the held-out test set. The selected model was then assessed on the test partition to provide an unbiased estimate of performance.
+
+The operational threshold prioritizes failure detection while balancing precision and recall.
 
 ## 🔍 Explainable AI (SHAP)
 
-SHAP `TreeExplainer` was applied to the selected Tuned XGBoost model:
-- **Global Beeswarm Summary**: High Torque, high Tool Wear, and extreme Spindle Speeds are the primary risk drivers.
-- **Feature Importance Ranking**: `Torque` > `Tool_wear` > `Rotational_speed` > `Air_temperature` > `Process_temperature`.
-- **Local Waterfall Analysis**: Breaks down positive/negative feature contributions for a true equipment failure event.
-- **Dependence Interaction**: Highlights the non-linear physical relationship between spindle torque and rotational speed.
-- **Faculty Governance Note**: SHAP values represent statistical feature attributions within the learned decision surface, not physical proof of causation.
+SHAP TreeExplainer is used to interpret the selected Tuned XGBoost model.
 
----
+The explainability analysis includes:
 
-## 💻 Industrial Web Application (Flask)
+- Global SHAP beeswarm summary
+- Feature importance ranking
+- Local waterfall analysis
+- Feature dependence and interaction analysis
 
-The Flask web application provides an operator-ready predictive maintenance control center:
-- **Production Pipeline**: Encapsulates true feature scaling and inference in `models/final_pipeline.pkl`.
-- **Level 1 Hard Sanity Validation**: Rejects physically impossible / negative sensor inputs with HTTP 400.
-- **Level 2 Training Distribution Check**: Alerts operators if sensor readings extrapolate outside observed training ranges without breaking inference.
-- **Dynamic Risk Categorization**:
-  - `LOW RISK`: Failure Probability < 20% (Normal Status)
-  - `MEDIUM RISK`: 20% ≤ Failure Probability < 50% (Elevated Caution)
-  - `HIGH RISK`: Failure Probability ≥ 50% (Maintenance Required)
-- **Programmatic API Endpoints**:
-  - `GET /api/metadata`: Returns model specifications, operational threshold, and test metrics.
-  - `POST /api/predict`: JSON prediction endpoint with full input validation.
+The leading feature importance order is:
 
----
+`Torque` → `Tool_wear` → `Rotational_speed` → `Air_temperature` → `Process_temperature`
 
-## 🚀 Setup and Execution Instructions
+SHAP values represent model feature attributions and should not be interpreted as proof of physical causation.
 
-### 1. Environment Setup
-The project requires Python 3.11+.
+## 💻 Flask Web Application
+
+The dashboard provides a predictive maintenance interface for entering equipment operating conditions and assessing failure risk.
+
+### Risk Categorization
+
+| Risk Level | Failure Probability | Interpretation |
+|---|---:|---|
+| Low Risk | < 20% | Normal Status |
+| Medium Risk | 20% to < 50% | Elevated Caution |
+| High Risk | ≥ 50% | Maintenance Required |
+
+### API Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/metadata` | Returns model specifications, operational threshold, and test metrics |
+| `POST /api/predict` | Accepts JSON input and returns a validated prediction |
+
+The application includes input sanity checks and advisory warnings when inputs fall outside the observed training ranges.
+
+## 🛠️ Technology Stack
+
+- **Programming Language:** Python
+- **Machine Learning:** scikit-learn, XGBoost
+- **Data Processing:** pandas, NumPy
+- **Explainable AI:** SHAP
+- **Web Framework:** Flask
+- **Visualization:** Matplotlib, Seaborn
+- **Deployment:** Render, Gunicorn
+- **Development Environment:** Jupyter Notebook
+
+## ⚙️ Setup and Execution
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/S-Dinesh-Reddy/predictive-maintenance-failure-risk-assessment.git
+cd predictive-maintenance-failure-risk-assessment
+```
+
+### 2. Create a Virtual Environment
+
+**Windows PowerShell:**
 
 ```powershell
-# Using uv (Recommended)
-uv venv .venv --python 3.11
-uv pip install flask scikit-learn pandas numpy xgboost joblib matplotlib seaborn shap nbformat ipykernel nbconvert
-
-# Or using standard pip
 python -m venv .venv
-.\.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux:**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Execute Jupyter Notebooks Top-to-Bottom
-```powershell
-# Execute Phase 1 (Data Preprocessing & EDA - 63 cells)
-.\.venv\Scripts\jupyter.exe nbconvert --to notebook --execute --inplace notebooks/Phase_1_Data_Preprocessing.ipynb
+### 4. Run the Flask Application
 
-# Execute Phase 2 (Model Training & Evaluation - 112 cells)
-.\.venv\Scripts\jupyter.exe nbconvert --to notebook --execute --inplace notebooks/Phase_2_Model_Training_Evaluation.ipynb
+```bash
+python app.py
 ```
 
-### 3. Run the Automated Test Suite
-```powershell
-.\.venv\Scripts\python.exe tests/test_pipeline_and_app.py
-```
-Validates required artifacts, dataset integrity, scaler parameters, pipeline inference, and Flask UI/API endpoints.
+Open the dashboard in your browser:
 
-### 4. Launch the Flask Web Dashboard
-```powershell
-.\.venv\Scripts\python.exe app.py
+[http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+
+### 5. Run the Test Suite
+
+```bash
+python tests/test_pipeline_and_app.py
 ```
-Open your browser at `http://127.0.0.1:5000/`.
+
+The test suite validates required artifacts, dataset integrity, scaler parameters, pipeline inference, and Flask UI/API endpoints.
+
+### 6. Execute the Jupyter Notebooks
+
+Run the notebooks in order:
+
+1. `notebooks/Phase_1_Data_Preprocessing.ipynb`
+2. `notebooks/Phase_2_Model_Training_Evaluation.ipynb`
+
+The exported model artifacts in `models/` are required to run the dashboard. Re-running the notebooks is not necessary when the existing artifacts are available.
+
+## 📚 Documentation
+
+- [Predictive Maintenance Project Report](docs/Predictive_Maintenance_Project_Report.pdf)
+- [Deployment Documentation](docs/Deployment_Documentation.pdf)
+
+Refer to the project report for the detailed methodology and evaluation, and the deployment documentation for hosting configuration and deployment steps.
+
+## ⚠️ Limitations & Responsible Use
+
+1. **Synthetic Dataset:** AI4I 2020 is a synthetic benchmark. Results on this dataset do not guarantee equivalent performance on real industrial machinery.
+2. **Input Extrapolation:** Predictions outside the training distribution may be unreliable. The dashboard provides advisory warnings for such inputs.
+3. **Attribution vs. Causation:** SHAP explains model behavior but does not establish mechanical causation.
+4. **Decision Support:** The system is intended to support maintenance decisions, not replace qualified inspection or serve as a standalone autonomous shutdown mechanism.
+5. **Industrial Validation:** Site-specific testing, calibration, and validation are required before deployment in real-world operations.
 
 ---
 
-## ⚠️ Known Limitations & Domain Caveats
-
-1. **Synthetic Nature of AI4I 2020**: The AI4I 2020 dataset is a synthetic benchmark reflecting milling machine physics. High test performance on this benchmark does not guarantee identical performance on physical factory milling machines without domain-specific telemetry calibration.
-2. **Extrapolation Constraints**: The model was trained within specific sensor ranges (e.g., Torque 3.8–76.6 Nm, Air Temperature 295.3–304.5 K). Predictions on inputs outside these distributions represent extrapolation; the UI displays an advisory warning in such conditions.
-3. **Attribution vs. Causation**: SHAP values explain model attribution, not mechanical causation. Physical maintenance decisions should be cross-verified against machine specifications and physical inspection.
+**Developed as a machine learning project focused on predictive maintenance, failure risk assessment, model explainability, and deployment.**
