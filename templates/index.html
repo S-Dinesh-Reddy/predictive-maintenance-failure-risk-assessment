@@ -4,9 +4,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Predictive Maintenance — Machine Failure Risk Assessment</title>
+  <title>Predictive Maintenance and Failure Risk Assessment for Industrial Equipment</title>
   <meta name="description"
-    content="Industrial predictive maintenance control center with tuned XGBoost failure risk assessment on AI4I 2020 dataset." />
+    content="Predictive Maintenance and Failure Risk Assessment for Industrial Equipment prototype with tuned XGBoost classifier on AI4I 2020 dataset." />
   
   <!-- Modern Clean Industrial Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,9 +41,9 @@
         <div class="system-titles">
           <h1 class="system-title">PREDICTIVE MAINTENANCE</h1>
           <div class="system-subtitle-row">
-            <span class="system-sub-bold">MACHINE FAILURE RISK ASSESSMENT</span>
+            <span class="system-sub-bold">FAILURE RISK ASSESSMENT FOR INDUSTRIAL EQUIPMENT</span>
             <span class="system-sep">·</span>
-            <span class="system-sub-meta">AI4I 2020 · Tuned XGBoost · Model-Driven Telemetry Simulation Prototype</span>
+            <span class="system-sub-meta">AI4I 2020 Dataset · Tuned XGBoost Prototype · Simulated Telemetry</span>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
       <div class="header-right">
         <div class="telemetry-pill">
           <span class="telemetry-dot"></span>
-          <span class="telemetry-label">SYSTEM ONLINE · SIMULATION ACTIVE</span>
+          <span class="telemetry-label">PROTOTYPE ACTIVE · SIMULATED TELEMETRY</span>
         </div>
         <div class="header-badge timestamp-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -96,7 +96,7 @@
             <!-- CNC Machining Photo Preview -->
             <div class="machine-photo-frame">
               <img src="{{ url_for('static', filename='assets/cnc_machine.jpg') }}" alt="CNC Milling Machining Center" class="machine-photo-img" />
-              <div class="photo-overlay-tag">5-AXIS CNC MILL</div>
+              <div class="photo-overlay-tag">SIMULATED CNC MILLING UNIT</div>
             </div>
 
             <!-- Telemetry Status Grid -->
@@ -175,7 +175,7 @@
           <div class="panel-header-line">
             <div class="section-title-wrap">
               <span class="orange-bar"></span>
-              <h2 class="panel-title-text">LIVE MONITORING CONTEXT</h2>
+              <h2 class="panel-title-text">SIMULATED MONITORING CONTEXT</h2>
             </div>
           </div>
 
@@ -190,7 +190,7 @@
               </div>
               <div class="context-cell-text">
                 <span class="c-k">Environment</span>
-                <span class="c-v">Factory Floor</span>
+                <span class="c-v">Simulated Machining Cell</span>
               </div>
             </div>
 
@@ -203,8 +203,8 @@
                 </svg>
               </div>
               <div class="context-cell-text">
-                <span class="c-k">Monitoring</span>
-                <span class="c-v">Sensor Telemetry</span>
+                <span class="c-k">Telemetry Source</span>
+                <span class="c-v">Simulated Telemetry</span>
               </div>
             </div>
 
@@ -266,7 +266,7 @@
           <span class="orange-bar"></span>
           <div>
             <h2 class="panel-title-text">01 &nbsp;OPERATING CONDITIONS</h2>
-            <p class="panel-subtitle-text">Enter current sensor readings for the machine</p>
+            <p class="panel-subtitle-text">Enter simulated or manual telemetry readings for the machine</p>
           </div>
         </div>
         <span class="panel-chip">6 SENSOR INPUTS</span>
@@ -459,7 +459,7 @@
           <span class="orange-bar"></span>
           <div>
             <h2 class="panel-title-text">02 &nbsp;PREDICTIVE RISK ASSESSMENT</h2>
-            <p class="panel-subtitle-text">Model output for the submitted operating conditions</p>
+            <p class="panel-subtitle-text">Model failure risk estimate for submitted operating conditions</p>
           </div>
         </div>
         <span class="panel-chip">RESULTS</span>
@@ -611,7 +611,7 @@
           <span class="orange-bar"></span>
           <div>
             <h2 class="panel-title-text">03 &nbsp;SUBMITTED MACHINE TELEMETRY SUMMARY</h2>
-            <p class="panel-subtitle-text">Active operational parameters submitted to the classification pipeline</p>
+            <p class="panel-subtitle-text">Operating parameters evaluated by the classification pipeline</p>
           </div>
         </div>
         <span class="panel-chip">INPUT SUMMARY</span>
@@ -659,11 +659,11 @@
         <div class="section-title-wrap">
           <span class="orange-bar"></span>
           <div>
-            <h2 class="panel-title-text">04 &nbsp;RECOMMENDED MAINTENANCE ACTION</h2>
-            <p class="panel-subtitle-text">Prescriptive operational guidance dynamically matched to predicted failure risk level</p>
+            <h2 class="panel-title-text">04 &nbsp;ADVISORY MAINTENANCE GUIDANCE</h2>
+            <p class="panel-subtitle-text">Model-based advisory guidance dynamically matched to estimated failure risk level</p>
           </div>
         </div>
-        <span class="panel-chip">SOP PROTOCOL</span>
+        <span class="panel-chip">ADVISORY PROTOCOL</span>
       </div>
 
       <div class="action-card-content">
@@ -682,7 +682,7 @@
               {% endif %}
             </span>
           </div>
-          <span class="action-protocol-tag">SOP REF: PM-AI4I-01</span>
+          <span class="action-protocol-tag">ADVISORY REF: PM-AI4I-01</span>
         </div>
 
         <p class="action-main-text" id="actionPrimaryText">
@@ -877,9 +877,9 @@
     <footer class="app-footer">
       <div class="footer-content">
         <div class="footer-left">
-          <span class="footer-brand">PREDICTIVE MAINTENANCE CONTROL CONSOLE</span>
+          <span class="footer-brand">PREDICTIVE MAINTENANCE AND FAILURE RISK ASSESSMENT</span>
           <span class="footer-sep">|</span>
-          <span class="footer-text">Machine Failure Risk Assessment &amp; Telemetry Monitoring</span>
+          <span class="footer-text">Industrial Equipment Decision Support Prototype</span>
         </div>
         <div class="footer-right">
           <span class="footer-sub">AI4I 2020 Predictive Maintenance Dataset · Tuned XGBoost</span>
