@@ -331,22 +331,33 @@ sns.set_theme(style='whitegrid', font='sans-serif')
 palette = sns.color_palette("mako", len(models))
 
 # GRAPH 1 — Overall Model Comparison (Grouped Bar Chart)
-fig, ax = plt.subplots(figsize=(12, 6))
-metrics_to_plot = ['Accuracy', 'Precision', 'Recall', 'F1-Score']
-metric_keys = ['accuracy', 'precision', 'recall', 'f1']
+fig, ax = plt.subplots(figsize=(13, 6))
+metrics_to_plot = ['Precision', 'Recall', 'F1-Score', 'Average Precision (AP)']
+metric_keys = ['precision', 'recall', 'f1', 'average_precision']
+colors_g1 = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
 x = np.arange(len(models))
-width = 0.2
+width = 0.18
 
-for i, (m_label, m_key) in enumerate(zip(metrics_to_plot, metric_keys)):
+for i, (m_label, m_key, col) in enumerate(zip(metrics_to_plot, metric_keys, colors_g1)):
     vals = [test_results[m][m_key] for m in models.keys()]
-    ax.bar(x + (i - 1.5) * width, vals, width, label=m_label)
+    bars = ax.bar(x + (i - 1.5) * width, vals, width, label=m_label, color=col, edgecolor='black', alpha=0.85)
+    for bar in bars:
+        h = bar.get_height()
+        if h > 0.05:
+            ax.text(bar.get_x() + bar.get_width()/2., h + 0.015, f"{h:.2f}", ha='center', va='bottom', fontsize=8)
 
 ax.set_xticks(x)
-ax.set_xticklabels(models.keys(), rotation=15, ha='right', fontsize=11, fontweight='medium')
-ax.set_ylabel('Score', fontsize=12)
-ax.set_title('Graph 1 — Overall Model Comparison (Held-Out Test Set)', fontsize=14, fontweight='bold', pad=15)
-ax.set_ylim(0, 1.05)
-ax.legend(loc='lower right', frameon=True)
+xtick_labels = list(models.keys())
+ax.set_xticklabels(xtick_labels, rotation=15, ha='right', fontsize=10.5, fontweight='medium')
+# Subtly highlight the winning model
+ax.get_xticklabels()[-1].set_fontweight('bold')
+ax.get_xticklabels()[-1].set_color('#1d4ed8')
+
+ax.set_ylabel('Metric Score (0.0 – 1.0 Scale)', fontsize=12)
+ax.set_title('Graph 1 — Overall Model Comparison (Precision, Recall, F1 & AP)', fontsize=14, fontweight='bold', pad=15)
+ax.set_ylim(0, 1.15)
+ax.grid(True, linestyle='--', alpha=0.5, axis='y')
+ax.legend(loc='upper left', ncol=4, frameon=True, fontsize=10)
 plt.tight_layout()
 fig.savefig(os.path.join(STATIC_ASSETS_DIR, 'model_comparison.png'), dpi=300)
 plt.close(fig)
@@ -365,7 +376,7 @@ ax1.bar(x - 0.15, brier_vals, 0.3, label='MSE / Brier Score (Equivalent)', color
 ax1.bar(x + 0.15, rmse_vals, 0.3, label='RMSE (sqrt of MSE)', color='#46a5a5')
 ax1.set_xticks(x)
 ax1.set_xticklabels(names, rotation=25, ha='right', fontsize=10)
-ax1.set_title('Prediction Error Metrics (MSE & RMSE)', fontsize=12, fontweight='bold')
+ax1.set_title('Prediction Error Metrics (MSE / Brier & RMSE) — Lower is Better', fontsize=12, fontweight='bold')
 ax1.set_ylabel('Error Score', fontsize=11)
 ax1.legend()
 
@@ -373,7 +384,7 @@ ax1.legend()
 ax2.bar(x, ll_vals, 0.5, color='#d97706')
 ax2.set_xticks(x)
 ax2.set_xticklabels(names, rotation=25, ha='right', fontsize=10)
-ax2.set_title('Cross-Entropy Log Loss (Lower is Better)', fontsize=12, fontweight='bold')
+ax2.set_title('Cross-Entropy Log Loss — Lower is Better', fontsize=12, fontweight='bold')
 ax2.set_ylabel('Log Loss', fontsize=11)
 
 plt.suptitle('Graph 2 — Prediction-Error & Probability Quality Comparison', fontsize=14, fontweight='bold', y=1.02)
@@ -391,7 +402,7 @@ for name in models.keys():
 
 ax.axhline(y=y_test.mean(), color='r', linestyle='--', label=f'Prevalence Baseline ({y_test.mean()*100:.1f}%)')
 ax.set_xlabel('Recall (Failure Detection Rate)', fontsize=12)
-ax.set_ylabel('Precision (Positive Predictive Value)', fontsize=12)
+ax.set_ylabel('Precision (Reliability of Failure Alarms)', fontsize=12)
 ax.set_title('Graph 3 — Precision–Recall Curves (AI4I Imbalanced Positive Class)', fontsize=14, fontweight='bold', pad=15)
 ax.set_xlim([0.0, 1.0])
 ax.set_ylim([0.0, 1.05])
@@ -481,13 +492,55 @@ ax.plot(m_pred_xgb, f_pos_xgb, '^-', label='Tuned XGBoost', color='#3b82f6')
 
 ax.plot([0, 1], [0, 1], 'k--', label='Perfect Calibration')
 ax.set_xlabel('Mean Predicted Probability', fontsize=12)
-ax.set_ylabel('Fraction of True Positives', fontsize=12)
+ax.set_ylabel('Observed Fraction of Failures', fontsize=12)
 ax.set_title('Calibration / Reliability Diagrams', fontsize=14, fontweight='bold', pad=15)
 ax.legend(loc='upper left', frameon=True)
 plt.tight_layout()
 fig.savefig(os.path.join(STATIC_ASSETS_DIR, 'calibration_curves.png'), dpi=300)
 plt.close(fig)
 print("  Saved: calibration_curves.png")
+
+# GRAPH 8 — Tuned XGBoost Learning Curve across sequential boosting rounds
+from sklearn.model_selection import train_test_split
+
+X_sub_tr, X_val, y_sub_tr, y_val = train_test_split(
+    X_train_df, y_train,
+    test_size=0.20,
+    stratify=y_train,
+    random_state=RANDOM_SEED
+)
+
+lc_model = XGBClassifier(
+    **models['Tuned XGBoost'].get_params()
+)
+
+lc_model.fit(
+    X_sub_tr, y_sub_tr,
+    eval_set=[(X_sub_tr, y_sub_tr), (X_val, y_val)],
+    verbose=False
+)
+
+results_lc = lc_model.evals_result()
+tr_loss = results_lc['validation_0']['logloss']
+va_loss = results_lc['validation_1']['logloss']
+rounds_seq = range(1, len(tr_loss) + 1)
+min_round = np.argmin(va_loss) + 1
+min_loss = np.min(va_loss)
+
+fig, ax = plt.subplots(figsize=(9.5, 5))
+ax.plot(rounds_seq, tr_loss, label='Sub-Training Log Loss', color='#2563eb', lw=2)
+ax.plot(rounds_seq, va_loss, label='Internal Validation Log Loss (Training Holdout)', color='#ea580c', lw=2)
+ax.axvline(x=min_round, color='#10b981', linestyle='--', lw=1.5, label=f'Min Validation Loss (Round {min_round}: {min_loss:.4f})')
+ax.set_title('Graph 8 — Tuned XGBoost Learning Curve: Log Loss Across Boosting Rounds', fontsize=13, fontweight='bold', pad=12)
+ax.set_xlabel('Boosting Round (Number of Sequential Trees)', fontsize=11)
+ax.set_ylabel('Cross-Entropy Log Loss', fontsize=11)
+ax.grid(True, linestyle='--', alpha=0.5)
+ax.legend(frameon=True, loc='upper right')
+plt.tight_layout()
+fig.savefig(os.path.join(STATIC_ASSETS_DIR, 'learning_curve.png'), dpi=300)
+plt.close(fig)
+print("  Saved: learning_curve.png")
+
 
 # 10. SHAP Explainability on Final Tuned XGBoost Model
 print("\n" + "="*50)

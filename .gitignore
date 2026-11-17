@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Headless notebook execution test outputs
+Phase_*_Run.ipynb
+*_Run.ipynb
+
+# Scratch scripts and inspection dumps
+scripts/inspect_*.txt
+scripts/phase*_cells.txt
+
+# Local Python virtual environments
+.venv*/

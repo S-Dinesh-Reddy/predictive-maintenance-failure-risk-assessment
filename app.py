@@ -280,18 +280,25 @@ def api_predict():
         if not data or not isinstance(data, dict):
             return jsonify({"status": "error", "message": "No JSON payload provided", "error": "No JSON payload provided"}), 400
 
-        required_fields = ["air_temperature", "process_temperature", "rotational_speed", "torque", "tool_wear", "machine_type"]
-        for field in required_fields:
+        # Validate machine type parameter (supporting both 'machine_type' and 'type')
+        raw_type = data.get("machine_type") if "machine_type" in data else data.get("type")
+        if raw_type is None:
+            err_msg = "Missing required parameter: machine_type (or 'type')"
+            return jsonify({"status": "error", "message": err_msg, "error": err_msg}), 400
+
+        machine_type = str(raw_type).strip().upper()
+        if machine_type not in VALID_MACHINE_TYPES:
+            err_msg = f"Invalid machine type '{raw_type}' (must be H, M, or L)"
+            return jsonify({"status": "error", "message": err_msg, "error": err_msg}), 400
+
+        required_numeric = ["air_temperature", "process_temperature", "rotational_speed", "torque", "tool_wear"]
+        for field in required_numeric:
             if field not in data:
                 err_msg = f"Missing required parameter: {field}"
                 return jsonify({"status": "error", "message": err_msg, "error": err_msg}), 400
 
-        machine_type = str(data["machine_type"]).strip().upper()
-        if machine_type not in VALID_MACHINE_TYPES:
-            err_msg = "Invalid machine_type (must be H, M, or L)"
-            return jsonify({"status": "error", "message": err_msg, "error": err_msg}), 400
-
-        # Validate numeric types and sanity limits
+        # Validate numeric types and Level 1 hard physical sanity limits
+        validated_values = {}
         for field, limits in SANITY_RANGES.items():
             try:
                 val = float(data[field])
@@ -303,12 +310,25 @@ def api_predict():
                 err_msg = f"{limits['label']} ({val} {limits['unit']}) is outside supported operating bounds [{limits['min']}, {limits['max']} {limits['unit']}]"
                 return jsonify({"status": "error", "message": err_msg, "error": err_msg}), 400
 
-        air_temp = float(data["air_temperature"])
-        proc_temp = float(data["process_temperature"])
-        rot_speed = float(data["rotational_speed"])
-        torque = float(data["torque"])
-        tool_wear = float(data["tool_wear"])
+            validated_values[field] = val
 
+        # Level 2 — Check AI4I 2020 training distribution bounds (soft advisory warnings)
+        out_of_dist_warnings = []
+        for feat, t_config in TRAINING_RANGES.items():
+            v = validated_values.get(feat)
+            if v is not None and (v < t_config["min"] or v > t_config["max"]):
+                label = SANITY_RANGES[feat]["label"]
+                out_of_dist_warnings.append(
+                    f"{label} ({v} {t_config['unit']}) outside observed training distribution [{t_config['min']}, {t_config['max']} {t_config['unit']}]"
+                )
+
+        air_temp = validated_values["air_temperature"]
+        proc_temp = validated_values["process_temperature"]
+        rot_speed = validated_values["rotational_speed"]
+        torque = validated_values["torque"]
+        tool_wear = validated_values["tool_wear"]
+
+        # Engineered features matching Phase 1 training preprocessing
         temp_diff = proc_temp - air_temp
         tool_wear_level = 0 if tool_wear <= 71 else (1 if tool_wear <= 144 else 2)
         type_l = 1 if machine_type == "L" else 0
@@ -319,19 +339,26 @@ def api_predict():
             columns=feature_names
         )
 
-        prob = float(model_pipeline.predict_proba(input_data)[0][1] * 100)
-        pred = 1 if prob >= OPERATIONAL_THRESHOLD * 100.0 else 0
-        risk = "LOW" if prob < 20.0 else ("MEDIUM" if prob < 50.0 else "HIGH")
+        prob_decimal = float(model_pipeline.predict_proba(input_data)[0][1])
+        prob_pct = prob_decimal * 100.0
+        pred = 1 if prob_decimal >= OPERATIONAL_THRESHOLD else 0
+        risk = "LOW" if prob_pct < 20.0 else ("MEDIUM" if prob_pct < 50.0 else "HIGH")
 
         return jsonify({
             "status": "success",
             "prediction": pred,
-            "failure_probability": round(prob, 4),
+            "failure_prediction": pred,
+            "failure_probability": round(prob_decimal, 4),
+            "failure_percentage": round(prob_pct, 2),
             "risk_level": risk,
-            "threshold_applied": OPERATIONAL_THRESHOLD
+            "operational_threshold": OPERATIONAL_THRESHOLD,
+            "threshold_applied": OPERATIONAL_THRESHOLD,
+            "training_warning": len(out_of_dist_warnings) > 0,
+            "warnings": out_of_dist_warnings,
+            "warning_count": len(out_of_dist_warnings)
         })
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
+        return jsonify({"status": "error", "message": str(e), "error": str(e)}), 400
 
 
 if __name__ == "__main__":

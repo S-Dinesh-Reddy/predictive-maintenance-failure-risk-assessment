@@ -150,7 +150,7 @@ def test_flask_endpoints():
     assert "test_metrics" in data_meta
     assert data_meta["operational_threshold"] == 0.50
 
-    # 6. POST API Predict Valid
+    # 6. POST API Predict Valid (testing standardized keys and scale)
     res_api_pred = client.post("/api/predict", json={
         "air_temperature": 300.0,
         "process_temperature": 310.0,
@@ -163,9 +163,61 @@ def test_flask_endpoints():
     data_api = res_api_pred.get_json()
     assert data_api["status"] == "success"
     assert data_api["prediction"] == 0
+    assert data_api["failure_prediction"] == 0
     assert data_api["risk_level"] == "LOW"
+    assert "failure_probability" in data_api
+    assert "failure_percentage" in data_api
+    assert 0.0 <= data_api["failure_probability"] <= 1.0
+    assert 0.0 <= data_api["failure_percentage"] <= 100.0
+    assert abs(data_api["failure_probability"] * 100.0 - data_api["failure_percentage"]) < 0.1
+    assert data_api["operational_threshold"] == 0.50
+    assert data_api["threshold_applied"] == 0.50
+    assert data_api["training_warning"] is False
+    assert data_api["warning_count"] == 0
+    assert data_api["warnings"] == []
 
-    # 7. POST API Predict Invalid (Missing field)
+    # 7. POST API Predict with 'type' parameter fallback (backward compatibility)
+    res_api_type_fallback = client.post("/api/predict", json={
+        "air_temperature": 300.0,
+        "process_temperature": 310.0,
+        "rotational_speed": 1400.0,
+        "torque": 30.0,
+        "tool_wear": 20.0,
+        "type": "L"  # using 'type' instead of 'machine_type'
+    })
+    assert res_api_type_fallback.status_code == 200
+    assert res_api_type_fallback.get_json()["status"] == "success"
+
+    # 8. POST API Predict with Level 2 Out-of-Distribution Warning
+    # Torque 100.0 Nm is within physical sanity (0-150 Nm) but outside training distribution (3.8-76.6 Nm)
+    res_api_ood = client.post("/api/predict", json={
+        "air_temperature": 300.0,
+        "process_temperature": 310.0,
+        "rotational_speed": 1400.0,
+        "torque": 100.0,
+        "tool_wear": 20.0,
+        "machine_type": "M"
+    })
+    assert res_api_ood.status_code == 200
+    data_ood = res_api_ood.get_json()
+    assert data_ood["status"] == "success"
+    assert data_ood["training_warning"] is True
+    assert data_ood["warning_count"] >= 1
+    assert any("Torque" in w for w in data_ood["warnings"])
+
+    # 9. POST API Predict Invalid Machine Type (must reject with 400)
+    res_api_bad_type = client.post("/api/predict", json={
+        "air_temperature": 300.0,
+        "process_temperature": 310.0,
+        "rotational_speed": 1400.0,
+        "torque": 30.0,
+        "tool_wear": 20.0,
+        "machine_type": "Z"
+    })
+    assert res_api_bad_type.status_code == 400
+    assert "Invalid machine type" in res_api_bad_type.get_json()["error"]
+
+    # 10. POST API Predict Invalid (Missing field)
     res_api_bad = client.post("/api/predict", json={
         "air_temperature": 300.0
     })
@@ -173,6 +225,36 @@ def test_flask_endpoints():
     data_bad = res_api_bad.get_json()
     assert data_bad["status"] == "error"
     assert "Missing required parameter" in data_bad["error"]
+
+
+def test_metadata_pipeline_consistency():
+    """Verify metadata definitions, schema consistency, and metric bounds against the production pipeline."""
+    metadata = json.load(open(os.path.join(MODELS_DIR, "model_metadata.json"), encoding="utf-8"))
+    pipeline = joblib.load(os.path.join(MODELS_DIR, "final_pipeline.pkl"))
+
+    # Assert 9 input features
+    features = metadata.get("features", metadata.get("feature_names"))
+    assert len(features) == 9, f"Expected 9 features in metadata, got {len(features)}"
+
+    # Assert operational threshold
+    assert metadata.get("operating_threshold") == 0.50
+
+    # Assert test metrics exist and match precision benchmarks
+    test_m = metadata.get("test_metrics", {})
+    assert test_m.get("accuracy") == 0.9865
+    assert test_m.get("precision") == 0.7887
+    assert test_m.get("recall") == 0.8235
+    assert test_m.get("f1") == 0.8058
+    assert test_m.get("roc_auc") == 0.9758
+    assert test_m.get("average_precision") == 0.8601
+    assert test_m.get("brier_score") == 0.0117
+    assert test_m.get("log_loss") == 0.0531
+
+    # Verify pipeline can score a test vector with exact metadata feature names
+    dummy_input = pd.DataFrame([[300.0, 310.0, 1500.0, 40.0, 50.0, 0, 1, 10.0, 1]], columns=features)
+    prob = pipeline.predict_proba(dummy_input)
+    assert prob.shape == (1, 2)
+    assert 0.0 <= prob[0][1] <= 1.0
 
 
 if __name__ == "__main__":
@@ -187,4 +269,6 @@ if __name__ == "__main__":
     print("  test_pipeline_inference: PASSED")
     test_flask_endpoints()
     print("  test_flask_endpoints: PASSED")
+    test_metadata_pipeline_consistency()
+    print("  test_metadata_pipeline_consistency: PASSED")
     print("\nALL AUTOMATED TESTS PASSED SUCCESSFULLY!")
